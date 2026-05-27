@@ -29,7 +29,8 @@ namespace muhamadiarov
     HashTable& operator=(HashTable&& other) noexcept;
     ~HashTable() noexcept;
 
-    void add(const Key& k, Value& v);
+
+    void add(const Key& k, const Value& v);
     Value drop(const Key& k);
     bool has(const Key& k) const noexcept;
     void rehesh(size_t slots);
@@ -37,6 +38,9 @@ namespace muhamadiarov
     size_t size() const noexcept;
     size_t bucketCapacity() const noexcept;
     size_t bucketCount() const noexcept;
+    size_t getBucketStart(const Key& k) const;
+    bool findSLot(const Key& k, size_t& id) const;
+    bool findFreeSlot(const Key& k, size_t& id) const; 
 
     HTIterator begin();
     HTIterator end();
@@ -215,4 +219,85 @@ muh::HashTable< Key, Value, Hash, Equal >::~HashTable() noexcept
 {
   delete [] slots_;
 }
+
+template < class Key, class Value, class Hash, class Equal >
+size_t muh::HashTable< Key, Value, Hash, Equal >::getBucketStart(const Key& k) const
+{
+  return hash_(k) % capacity_ * bucketCapacity_;
+}
+
+template < class Key, class Value, class Hash, class Equal >
+bool muh::HashTable< Key, Value, Hash, Equal >::findSLot(const Key& k, size_t& id) const
+{
+  size_t startBucket = getBucketStart(k);
+  size_t endBucket = startBucket + bucketCapacity_;
+  for (size_t i = startBucket; i < endBucket; ++i)
+  {
+    if (!slots_[i].empty && equal_(slots_[i].key_, k))
+    {
+      id = i;
+      return true;
+    }
+  }
+
+  size_t startOtherflow = otherflowBucketIndex_;
+  size_t endOtherflow = startOtherflow + bucketCapacity_;
+  for (size_t i = startOtherflow; i < endOtherflow; ++i)
+  {
+    if (!slots_[i].empty_ && equal(slots_[i].key_, k))
+    {
+      id = i;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+template < class Key, class Value, class Hash, class Equal >
+bool muh::HashTable< Key, Value, Hash, Equal >::findFreeSlot(const Key& k, size_t& id) const
+{
+  size_t startBucket = getBucketStart(k);
+  size_t endBucket = startBucket + bucketCapacity_;
+  for (size_t i = startBucket; i < endBucket; ++i)
+  {
+    if (slots_[i].empty_)
+    {
+      id = i;
+      return true;
+    }
+  }
+
+  size_t startOtherflow = otherflowBucketIndex_;
+  size_t endOtherflow = startOtherflow + bucketCapacity_;
+  for (size_t i = startBucket; i < endOtherflow; ++i)
+  {
+    if (slots_[i].empty_)
+    {
+      id = i;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+template <class Key, class Value, class Hash, class Equal>
+void muh::HashTable< Key, Value, Hash, Equal >::add(const Key& k, const Value& v)
+{
+  size_t startBucket;
+  bool result = findSLot(k, startBucket);
+  if (result)
+  {
+    return;
+  }
+  result = findFreeSlot(k, startBucket);
+  if (!result)
+  {
+    throw std::runtime_error("Hash-Table is otherflow: Not find free slot for data");
+  }
+  slots_[startBucket] = Slot< Key, Value >(k, v);
+  ++size_;
+}
+  
 #endif
