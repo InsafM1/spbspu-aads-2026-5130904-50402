@@ -49,9 +49,9 @@ namespace muhamadiarov
     size_t capacity() const noexcept;
     size_t bucketCapacity() const noexcept;
     size_t bucketCount() const noexcept;
-    size_t getBucketStart(const Key& k) const;
-    bool findSLot(const Key& k, size_t& id) const;
-    bool findFreeSlot(const Key& k, size_t& id) const; 
+    Value& get(const Key& k);
+    const Value& cget(const Key& k);
+    void clear() noexcept;
 
     HTIter< Key, Value, Hash, Equal > begin();
     HTIter< Key, Value, Hash, Equal > end();
@@ -68,6 +68,9 @@ namespace muhamadiarov
     Slot< Key, Value >* slots_;
     Hash hash_;
     Equal equal_;
+    size_t getBucketStart(const Key& k) const;
+    bool findSlot(const Key& k, size_t& id) const;
+    bool findFreeSlot(const Key& k, size_t& id) const;
   };
   
   template < class Key, class Value, class Hash, class Equal >
@@ -148,7 +151,7 @@ muh::HashTable< K, V, H, E >::HashTable(const HashTable& other):
   {
     for (size_t i = 0; i < capacity_; ++i)
     {
-      if (other.slots_[i].state_ == State::EMPTY)
+      if (other.slots_[i].state_ != State::EMPTY)
       {
         slots_[i] = other.slots_[i];
       }
@@ -168,9 +171,9 @@ muh::HashTable< K, V, H, E >::HashTable(HashTable&& other) noexcept:
   otherflowBucketIndex_(other.otherflowBucketIndex_),
   capacity_(other.capacity_),
   size_(other.size_),
+  slots_(other.slots_),
   hash_(std::move(other.hash_)),
-  equal_(std::move(other.equal_)),
-  slots_(other.slots_)
+  equal_(std::move(other.equal_))
 {
   other.slots_ = nullptr;
   other.bucketCapacity_ = 0;
@@ -240,7 +243,7 @@ size_t muh::HashTable< K, V, H, E >::getBucketStart(const K& k) const
 }
 
 template < class K, class V, class H, class E >
-bool muh::HashTable< K, V, H, E >::findSLot(const K& k, size_t& id) const
+bool muh::HashTable< K, V, H, E >::findSlot(const K& k, size_t& id) const
 {
   size_t startBucket = getBucketStart(k);
   size_t endBucket = startBucket + bucketCapacity_;
@@ -265,7 +268,7 @@ bool muh::HashTable< K, V, H, E >::findSLot(const K& k, size_t& id) const
     {
       return false;
     }
-    if (slots_[i].state_ == State::OCCUPIED && equal(slots_[i].key_, k))
+    if (slots_[i].state_ == State::OCCUPIED && equal_(slots_[i].key_, k))
     {
       id = i;
       return true;
@@ -305,7 +308,7 @@ template <class K, class V, class H, class E>
 void muh::HashTable< K, V, H, E >::add(const K& k, const V& v)
 {
   size_t slotIndex;
-  bool result = findSLot(k, slotIndex);
+  bool result = findSlot(k, slotIndex);
   if (result)
   {
     slots_[slotIndex].value_ = v;
@@ -324,7 +327,7 @@ template <class K, class V, class H, class E>
 V muh::HashTable< K, V, H, E >::drop(const K& k)
 {
   size_t slotIndex;
-  if (!findSLot(k, slotIndex))
+  if (!findSlot(k, slotIndex))
   {
     throw std::out_of_range("Key not found");
   }
@@ -338,7 +341,7 @@ template <class K, class V, class H, class E>
 bool muh::HashTable< K, V, H, E >::has(const K& k) const noexcept
 {
   size_t dummy;
-  return findSLot(k, dummy);
+  return findSlot(k, dummy);
 }
 
 template <class K, class V, class H, class E>
@@ -378,6 +381,38 @@ template <class K, class V, class H, class E>
 size_t muh::HashTable< K, V, H, E >::capacity() const noexcept
 {
   return capacity_;
+}
+
+template < class K, class V, class H, class E>
+V& muh::HashTable< K, V, H, E >::get(const K& k)
+{
+  size_t id = 0;
+  if (!findSlot(k, id))
+  {
+    throw std::out_of_range("Not find the data with this key");    
+  }
+  return slots_[id].value_;  
+}
+
+template < class K, class V, class H, class E>
+const V& muh::HashTable< K, V, H, E >::cget(const K& k)
+{
+  size_t id = 0;
+  if (!findSlot(k, id))
+  {
+    throw std::out_of_range("Not find the data with this key");    
+  }
+  return slots_[id].value_;  
+}
+
+template < class K, class V, class H, class E >
+void muh::HashTable< K, V, H, E >::clear() noexcept
+{
+  for (size_t i = 0; i < capacity_; ++i)
+  {
+    slots_[i].state_ = State::EMPTY;
+  }
+  size_ = 0;
 }
 
 template < class K, class V, class H, class E >
@@ -483,6 +518,7 @@ void muh::HTCIter< K, V, H, E >::advanceToNextOccupied()
   while (isTrueInd && ht_->slots_[currentIndex_].state_ != State::OCCUPIED)
   {
     ++currentIndex_;
+    isTrueInd = currentIndex_ < ht_->capacity_;
   }
 }
 
