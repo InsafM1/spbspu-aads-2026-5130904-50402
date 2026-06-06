@@ -2,6 +2,7 @@
 #define HASHTABLE_HPP
 #include <stdexcept>
 #include <utility>
+#include <memory>
 
 namespace muhamadiarov
 {
@@ -23,12 +24,15 @@ namespace muhamadiarov
   };
 
   template < class Key, class Value, class Hash, class Equal >
+  class HTIter;
+
+  template < class Key, class Value, class Hash, class Equal >
+  class HTCIter;
+
+  template < class Key, class Value, class Hash, class Equal >
   class HashTable
   {
   public:
-    class HTIterator;
-    class HTCIterator;
-
     HashTable(size_t bucketCapacity, size_t bucketCount);
     HashTable(const HashTable& other);
     HashTable(HashTable&& other) noexcept;
@@ -49,11 +53,13 @@ namespace muhamadiarov
     bool findSLot(const Key& k, size_t& id) const;
     bool findFreeSlot(const Key& k, size_t& id) const; 
 
-    HTIterator begin();
-    HTIterator end();
-    HTCIterator cbegin() const;
-    HTCIterator cend() const;
+    HTIter< Key, Value, Hash, Equal > begin();
+    HTIter< Key, Value, Hash, Equal > end();
+    HTCIter< Key, Value, Hash, Equal > cbegin() const;
+    HTCIter< Key, Value, Hash, Equal > cend() const;
   private:
+    friend class HTIter< Key, Value, Hash, Equal >;
+    friend class HTCIter< Key, Value, Hash, Equal >;
     size_t bucketCapacity_;
     size_t bucketCount_;
     size_t otherflowBucketIndex_;
@@ -63,57 +69,57 @@ namespace muhamadiarov
     Hash hash_;
     Equal equal_;
   };
-    
+  
   template < class Key, class Value, class Hash, class Equal >
-  class HashTable< Key, Value, Hash, Equal >::HTIterator
+  class HTIter
   {
-    friend class HashTable< Key, Value, Hash, Equal >;
   public:
-    HTIterator(HashTable< Key, Value, Hash, Equal >* ht, size_t ind, Slot< Key, Value >* current = nullptr);
+    HTIter(HashTable< Key, Value, Hash, Equal >* ht, size_t index = 0);
 
-    Slot< Key, Value >& operator*() noexcept;
-    bool operator==(const HTIterator& other) const;
-    bool operator!=(const HTIterator& other) const;
+    Slot< Key, Value >& operator*() const;
+    Slot< Key, Value >* operator->();
+    bool operator==(const HTIter& other) const;
+    bool operator!=(const HTIter& other) const;
     
-    HTIterator& operator++();
-    HTIterator& operator++(int);
+    HTIter& operator++();
+    HTIter operator++(int);
   private:
     HashTable< Key, Value, Hash, Equal >* ht_;
-    size_t bucketIndex_;
-    Slot< Key, Value >* current_;
+    size_t currentIndex_;
+    void advanceToNextOccupied();
   };
 
   template < class Key, class Value, class Hash, class Equal >
-  class HashTable< Key, Value, Hash, Equal >::HTCIterator
+  class HTCIter
   {
-    friend class HashTable< Key, Value, Hash, Equal >;
   public:
-    HTCIterator(HashTable< Key, Value, Hash, Equal >* ht, size_t ind, Slot< Key, Value >* current = nullptr);
+    HTCIter(HashTable< Key, Value, Hash, Equal >* ht, size_t index = 0);
 
-    Slot< Key, Value >& operator*() const noexcept;
-    bool operator==(const HTCIterator& other) const;
-    bool operator!=(const HTCIterator& other) const;
+    Slot< Key, Value >& operator*() const;
+    Slot< Key, Value >* operator->() const;
+    bool operator==(const HTCIter& other) const;
+    bool operator!=(const HTCIter& other) const;
     
-    HTCIterator& operator++();
-    HTCIterator& operator++(int);
+    HTCIter& operator++();
+    HTCIter operator++(int);
   private:
-    HashTable< Key, Value, Hash, Equal >* ht_;
-    size_t bucketIndex_;
-    Slot< Key, Value >* current_;
+    const HashTable< Key, Value, Hash, Equal >* ht_;
+    size_t currentIndex_;
+    void advanceToNextOccupied();
   };
 }
 
 namespace muh = muhamadiarov;
 
-template < class Key, class Value >
-muh::Slot< Key, Value >::Slot(const Key& key, const Value& value):
+template < class K, class V >
+muh::Slot< K, V >::Slot(const K& key, const V& value):
   key_(key), 
   value_(value), 
 state_(State::OCCUPIED) 
 {}
 
-template < class Key, class Value, class Hash, class Equal >
-muh::HashTable< Key, Value, Hash, Equal >::HashTable(size_t bucketCapacity, size_t bucketCount):
+template < class K, class V, class H, class E >
+muh::HashTable< K, V, H, E >::HashTable(size_t bucketCapacity, size_t bucketCount):
   bucketCapacity_(bucketCapacity),
   bucketCount_(bucketCount),
   otherflowBucketIndex_(bucketCapacity * bucketCount),
@@ -124,11 +130,11 @@ muh::HashTable< Key, Value, Hash, Equal >::HashTable(size_t bucketCapacity, size
   {
     throw std::invalid_argument("Count of buckets and their capacity must be > 0");
   }
-  slots_ = new Slot< Key, Value >[capacity_];
+  slots_ = new Slot< K, V >[capacity_];
 }
 
-template < class Key, class Value, class Hash, class Equal >
-muh::HashTable< Key, Value, Hash, Equal >::HashTable(const HashTable& other):
+template < class K, class V, class H, class E >
+muh::HashTable< K, V, H, E >::HashTable(const HashTable& other):
   bucketCapacity_(other.bucketCapacity_),
   bucketCount_(other.bucketCount_),
   otherflowBucketIndex_(other.otherflowBucketIndex_),
@@ -137,7 +143,7 @@ muh::HashTable< Key, Value, Hash, Equal >::HashTable(const HashTable& other):
   hash_(other.hash_),
   equal_(other.equal_)
 {
-  slots_ = new Slot< Key, Value >[capacity_];
+  slots_ = new Slot< K, V >[capacity_];
   try
   {
     for (size_t i = 0; i < capacity_; ++i)
@@ -155,8 +161,8 @@ muh::HashTable< Key, Value, Hash, Equal >::HashTable(const HashTable& other):
   }
 }
 
-template < class Key, class Value, class Hash, class Equal >
-muh::HashTable< Key, Value, Hash, Equal >::HashTable(HashTable&& other) noexcept:
+template < class K, class V, class H, class E >
+muh::HashTable< K, V, H, E >::HashTable(HashTable&& other) noexcept:
   bucketCapacity_(other.bucketCapacity_),
   bucketCount_(other.bucketCount_),
   otherflowBucketIndex_(other.otherflowBucketIndex_),
@@ -174,8 +180,8 @@ muh::HashTable< Key, Value, Hash, Equal >::HashTable(HashTable&& other) noexcept
   other.size_ = 0;
 }
 
-template < class Key, class Value, class Hash, class Equal >
-muh::HashTable< Key, Value, Hash, Equal >& muh::HashTable< Key, Value, Hash, Equal >::operator=(const HashTable& other)
+template < class K, class V, class H, class E >
+muh::HashTable< K, V, H, E >& muh::HashTable< K, V, H, E >::operator=(const HashTable& other)
 {
   if (this != &other) {
     delete[] slots_;
@@ -188,7 +194,7 @@ muh::HashTable< Key, Value, Hash, Equal >& muh::HashTable< Key, Value, Hash, Equ
     hash_ = other.hash_;
     equal_ = other.equal_;
 
-    slots_ = new Slot<Key, Value>[capacity_];
+    slots_ = new Slot<K, V>[capacity_];
     for (size_t i = 0; i < capacity_; ++i) {
       slots_[i] = other.slots_[i];
     }
@@ -196,8 +202,8 @@ muh::HashTable< Key, Value, Hash, Equal >& muh::HashTable< Key, Value, Hash, Equ
   return *this;
 }
 
-template < class Key, class Value, class Hash, class Equal >
-muh::HashTable< Key, Value, Hash, Equal >& muh::HashTable< Key, Value, Hash, Equal >::operator=(HashTable&& other) noexcept
+template < class K, class V, class H, class E >
+muh::HashTable< K, V, H, E >& muh::HashTable< K, V, H, E >::operator=(HashTable&& other) noexcept
 {
   if (this != &other) {
     delete[] slots_;
@@ -221,20 +227,20 @@ muh::HashTable< Key, Value, Hash, Equal >& muh::HashTable< Key, Value, Hash, Equ
   return *this;
 }
 
-template < class Key, class Value, class Hash, class Equal >
-muh::HashTable< Key, Value, Hash, Equal >::~HashTable() noexcept
+template < class K, class V, class H, class E >
+muh::HashTable< K, V, H, E >::~HashTable() noexcept
 {
   delete [] slots_;
 }
 
-template < class Key, class Value, class Hash, class Equal >
-size_t muh::HashTable< Key, Value, Hash, Equal >::getBucketStart(const Key& k) const
+template < class K, class V, class H, class E >
+size_t muh::HashTable< K, V, H, E >::getBucketStart(const K& k) const
 {
   return (hash_(k) % bucketCount_) * bucketCapacity_;
 }
 
-template < class Key, class Value, class Hash, class Equal >
-bool muh::HashTable< Key, Value, Hash, Equal >::findSLot(const Key& k, size_t& id) const
+template < class K, class V, class H, class E >
+bool muh::HashTable< K, V, H, E >::findSLot(const K& k, size_t& id) const
 {
   size_t startBucket = getBucketStart(k);
   size_t endBucket = startBucket + bucketCapacity_;
@@ -268,8 +274,8 @@ bool muh::HashTable< Key, Value, Hash, Equal >::findSLot(const Key& k, size_t& i
   return false;
 }
 
-template < class Key, class Value, class Hash, class Equal >
-bool muh::HashTable< Key, Value, Hash, Equal >::findFreeSlot(const Key& k, size_t& id) const
+template < class K, class V, class H, class E >
+bool muh::HashTable< K, V, H, E >::findFreeSlot(const K& k, size_t& id) const
 {
   size_t startBucket = getBucketStart(k);
   size_t endBucket = startBucket + bucketCapacity_;
@@ -295,8 +301,8 @@ bool muh::HashTable< Key, Value, Hash, Equal >::findFreeSlot(const Key& k, size_
   return false;
 }
 
-template <class Key, class Value, class Hash, class Equal>
-void muh::HashTable< Key, Value, Hash, Equal >::add(const Key& k, const Value& v)
+template <class K, class V, class H, class E>
+void muh::HashTable< K, V, H, E >::add(const K& k, const V& v)
 {
   size_t slotIndex;
   bool result = findSLot(k, slotIndex);
@@ -310,35 +316,35 @@ void muh::HashTable< Key, Value, Hash, Equal >::add(const Key& k, const Value& v
   {
     throw std::runtime_error("Hash-Table is otherflow: Not find free slot for data");
   }
-  slots_[slotIndex] = Slot< Key, Value >(k, v);
+  slots_[slotIndex] = Slot< K, V >(k, v);
   ++size_;
 }
 
-template <class Key, class Value, class Hash, class Equal>
-Value muh::HashTable< Key, Value, Hash, Equal >::drop(const Key& k)
+template <class K, class V, class H, class E>
+V muh::HashTable< K, V, H, E >::drop(const K& k)
 {
   size_t slotIndex;
   if (!findSLot(k, slotIndex))
   {
     throw std::out_of_range("Key not found");
   }
-  Value val = slots_[slotIndex].value_;
+  V val = slots_[slotIndex].value_;
   slots_[slotIndex].state_ = State::DELETE;
   --size_;
   return val;
 }
 
-template <class Key, class Value, class Hash, class Equal>
-bool muh::HashTable< Key, Value, Hash, Equal >::has(const Key& k) const noexcept
+template <class K, class V, class H, class E>
+bool muh::HashTable< K, V, H, E >::has(const K& k) const noexcept
 {
   size_t dummy;
   return findSLot(k, dummy);
 }
 
-template <class Key, class Value, class Hash, class Equal>
-void muh::HashTable< Key, Value, Hash, Equal >::rehash(size_t countBucket, size_t newBucketCapacity)
+template <class K, class V, class H, class E>
+void muh::HashTable< K, V, H, E >::rehash(size_t countBucket, size_t newBucketCapacity)
 {
-  HashTable newTable(newBucketCapacity, countBucket);
+  HashTable< K, V, H, E > newTable(newBucketCapacity, countBucket);
   for (size_t i = 0; i < capacity_; ++i)
   {
     if (slots_[i].state_ == State::OCCUPIED)
@@ -350,27 +356,112 @@ void muh::HashTable< Key, Value, Hash, Equal >::rehash(size_t countBucket, size_
   *this = std::move(newTable);
 }
 
-template <class Key, class Value, class Hash, class Equal>
-size_t muh::HashTable< Key, Value, Hash, Equal >::size() const noexcept
+template <class K, class V, class H, class E>
+size_t muh::HashTable< K, V, H, E >::size() const noexcept
 {
   return size_;
 }
 
-template <class Key, class Value, class Hash, class Equal>
-size_t muh::HashTable< Key, Value, Hash, Equal >::bucketCapacity() const noexcept
+template <class K, class V, class H, class E>
+size_t muh::HashTable< K, V, H, E >::bucketCapacity() const noexcept
 {
   return bucketCapacity_;
 }
 
-template <class Key, class Value, class Hash, class Equal>
-size_t muh::HashTable< Key, Value, Hash, Equal >::bucketCount() const noexcept
+template <class K, class V, class H, class E>
+size_t muh::HashTable< K, V, H, E >::bucketCount() const noexcept
 {
   return bucketCount_;
 }
 
-template <class Key, class Value, class Hash, class Equal>
-size_t muh::HashTable< Key, Value, Hash, Equal >::capacity() const noexcept
+template <class K, class V, class H, class E>
+size_t muh::HashTable< K, V, H, E >::capacity() const noexcept
 {
   return capacity_;
+}
+
+template < class K, class V, class H, class E >
+muh::HTIter< K, V, H, E >::HTIter(HashTable< K, V, H, E >* ht, size_t index):
+  ht_(ht),
+  currentIndex_(index)
+{
+  if (ht_ && currentIndex_ < ht_->capacity_)
+  {
+    advanceToNextOccupied();
+  }
+}
+
+template < class K, class V, class H, class E >
+void muh::HTIter< K, V, H, E >::advanceToNextOccupied()
+{
+  bool isNotOccupied = ht_->slots_[currentIndex_].state_ != State::OCCUPIED;
+  while (currentIndex_ < ht_->capacity_ && isNotOccupied)
+  {
+    ++currentIndex_;
+  }
+}
+
+template < class K, class V, class H, class E >
+muh::Slot< K, V >& muh::HTIter< K, V, H, E >::operator*() const
+{
+  if (!ht_ || currentIndex_ >= ht_->capacity_)
+  {
+    throw std::out_of_range("Iterator out of range");
+  }
+  return ht_->slots_[currentIndex_];
+}
+
+template < class K, class V, class H, class E >
+muh::Slot< K, V >* muh::HTIter< K, V, H, E >::operator->()
+{
+  if (!ht_ || currentIndex_ >= ht_->capacity_)
+  {
+    throw std::out_of_range("Iterator out of range");
+  }
+  return std::addressof(ht_->slots_[currentIndex_]);
+}
+
+
+template < class K, class V, class H, class E >
+bool muh::HTIter< K, V, H, E >::operator==(const HTIter& other) const
+{
+  return ht_ == other.ht_ && currentIndex_ == other.currentIndex_;
+}
+
+template < class K, class V, class H, class E >
+bool muh::HTIter< K, V, H, E >::operator!=(const HTIter& other) const
+{
+  return !(*this == other);
+}
+
+template < class K, class V, class H, class E >
+muh::HTIter< K, V, H, E >& muh::HTIter< K, V, H, E >::operator++()
+{
+  if (ht_ && currentIndex_ < ht_->capacity_)
+  {
+    ++currentIndex_;
+    advanceToNextOccupied();
+  }
+  return *this;
+}
+
+template < class K, class V, class H, class E >
+muh::HTIter< K, V, H, E > muh::HTIter< K, V, H, E >::operator++(int)
+{
+  HTIter temp = *this;
+  ++(*this);
+  return temp;
+}
+
+template < class K, class V, class H, class E >
+muh::HTIter< K, V, H, E > muh::HashTable< K, V, H, E >::begin()
+{
+  return HTIter< K, V, H, E >(this, 0);
+}
+
+template < class K, class V, class H, class E >
+muh::HTIter< K, V, H, E > muh::HashTable< K, V, H, E >::end()
+{
+  return HTIter< K, V, H, E >(this, capacity_);
 }
 #endif
