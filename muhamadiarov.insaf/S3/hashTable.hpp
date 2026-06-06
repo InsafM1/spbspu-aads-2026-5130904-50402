@@ -93,10 +93,10 @@ namespace muhamadiarov
   class HTCIter
   {
   public:
-    HTCIter(HashTable< Key, Value, Hash, Equal >* ht, size_t index = 0);
+    HTCIter(const HashTable< Key, Value, Hash, Equal >* ht, size_t index = 0);
 
-    Slot< Key, Value >& operator*() const;
-    Slot< Key, Value >* operator->() const;
+    const Slot< Key, Value >& operator*() const;
+    const Slot< Key, Value >* operator->() const;
     bool operator==(const HTCIter& other) const;
     bool operator!=(const HTCIter& other) const;
     
@@ -394,8 +394,8 @@ muh::HTIter< K, V, H, E >::HTIter(HashTable< K, V, H, E >* ht, size_t index):
 template < class K, class V, class H, class E >
 void muh::HTIter< K, V, H, E >::advanceToNextOccupied()
 {
-  bool isNotOccupied = ht_->slots_[currentIndex_].state_ != State::OCCUPIED;
-  while (currentIndex_ < ht_->capacity_ && isNotOccupied)
+  bool isTrueInd = currentIndex_ < ht_->capacity_;
+  while (isTrueInd && ht_->slots_[currentIndex_].state_ != State::OCCUPIED)
   {
     ++currentIndex_;
   }
@@ -463,5 +463,90 @@ template < class K, class V, class H, class E >
 muh::HTIter< K, V, H, E > muh::HashTable< K, V, H, E >::end()
 {
   return HTIter< K, V, H, E >(this, capacity_);
+}
+
+template < class K, class V, class H, class E >
+muh::HTCIter< K, V, H, E >::HTCIter(const HashTable< K, V, H, E >* ht, size_t index):
+  ht_(ht),
+  currentIndex_(index)
+{
+  if (ht_ && currentIndex_ < ht_->capacity_)
+  {
+    advanceToNextOccupied();
+  }
+}
+
+template < class K, class V, class H, class E >
+void muh::HTCIter< K, V, H, E >::advanceToNextOccupied()
+{
+  bool isTrueInd = currentIndex_ < ht_->capacity_;
+  while (isTrueInd && ht_->slots_[currentIndex_].state_ != State::OCCUPIED)
+  {
+    ++currentIndex_;
+  }
+}
+
+template < class K, class V, class H, class E >
+const muh::Slot< K, V >& muh::HTCIter< K, V, H, E >::operator*() const
+{
+  if (!ht_ || currentIndex_ >= ht_->capacity_)
+  {
+    throw std::out_of_range("Iterator out of range");
+  }
+  return ht_->slots_[currentIndex_];
+}
+
+template < class K, class V, class H, class E >
+const muh::Slot< K, V >* muh::HTCIter< K, V, H, E >::operator->() const
+{
+  if (!ht_ || currentIndex_ >= ht_->capacity_)
+  {
+    throw std::out_of_range("Iterator out of range");
+  }
+  return std::addressof(ht_->slots_[currentIndex_]);
+}
+
+
+template < class K, class V, class H, class E >
+bool muh::HTCIter< K, V, H, E >::operator==(const HTCIter& other) const
+{
+  return ht_ == other.ht_ && currentIndex_ == other.currentIndex_;
+}
+
+template < class K, class V, class H, class E >
+bool muh::HTCIter< K, V, H, E >::operator!=(const HTCIter& other) const
+{
+  return !(*this == other);
+}
+
+template < class K, class V, class H, class E >
+muh::HTCIter< K, V, H, E >& muh::HTCIter< K, V, H, E >::operator++()
+{
+  if (ht_ && currentIndex_ < ht_->capacity_)
+  {
+    ++currentIndex_;
+    advanceToNextOccupied();
+  }
+  return *this;
+}
+
+template < class K, class V, class H, class E >
+muh::HTCIter< K, V, H, E > muh::HTCIter< K, V, H, E >::operator++(int)
+{
+  HTCIter temp = *this;
+  ++(*this);
+  return temp;
+}
+
+template < class K, class V, class H, class E >
+muh::HTCIter< K, V, H, E > muh::HashTable< K, V, H, E >::cbegin() const
+{
+  return HTCIter< K, V, H, E >(this, 0);
+}
+
+template < class K, class V, class H, class E >
+muh::HTCIter< K, V, H, E > muh::HashTable< K, V, H, E >::cend() const
+{
+  return HTCIter< K, V, H, E >(this, capacity_);
 }
 #endif
