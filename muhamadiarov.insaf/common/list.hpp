@@ -28,7 +28,7 @@ namespace muhamadiarov
     void clear() noexcept;
     size_t size() const noexcept;
 
-    LIter< T > insert(LIter< T > pos, const T &value);
+    void insert(LIter< T > pos, const T &value);
     LIter< T > erase(LIter< T > pos);
   private:
     Node< T >* head_;
@@ -279,28 +279,56 @@ muh::LCIter< T > muh::List< T >::cend() const
 }
 
 template <class T>
-muh::LIter< T > muh::List< T >::insert(LIter< T > pos, const T &value)
+void muh::List< T >::insert(LIter< T > pos, const T &value)
 {
-  Node< T > *posNode = pos.current_;
-  Node< T > *newNode = new Node< T >{value, posNode, posNode->prev};
-  posNode->prev->next = newNode;
-  posNode->prev = newNode;
-  ++size_;
-  return LIter< T >{newNode};
+  Node< T >* posNode = pos.current_;
+  
+  if (!head_)
+  {
+    head_ = new Node< T >{value, nullptr, nullptr};
+    head_->next_ = head_;
+    head_->prev_ = head_;
+  }
+  else if (posNode == head_)
+  {
+    pushFront(value);
+    return;
+  }
+  else
+  {
+    Node< T >* newNode = new Node< T >{value, posNode, posNode->prev_};
+    posNode->prev_->next_ = newNode;
+    posNode->prev_ = newNode;
+    ++size_;
+  }
 }
 
 template <class T>
 muh::LIter< T > muh::List< T >::erase(LIter< T > pos)
 {
   if (size_ == 0) {
-    throw std::logic_error("Empty list");
+    throw std::out_of_range("Empty list");
   }
-  Node< T > *next = pos.curr_->next;
-  Node< T > *prev = pos.curr_->prev;
-  delete pos.curr_;
-  next->prev = prev;
-  prev->next = next;
+  Node< T >* toDelete = pos.current_;
+  LIter< T > next(toDelete->next_);
+  if (size_ == 1)
+  {
+    delete toDelete;
+    head_ = nullptr;
+  }
+  else
+  {
+    Node< T > *nextNode = toDelete->next_;
+    Node< T > *prevNode = toDelete->prev_;
+    nextNode->prev_ = prevNode;
+    prevNode->next_ = nextNode;
+    if (toDelete == head_)
+    {
+      head_ = nextNode;
+    }
+    delete toDelete;
+  }
   --size_;
-  return {next};
+  return next;
 }
 #endif
