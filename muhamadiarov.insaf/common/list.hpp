@@ -27,6 +27,9 @@ namespace muhamadiarov
     void popBack() noexcept;
     void clear() noexcept;
     size_t size() const noexcept;
+
+    LIter< T > insert(LIter< T > pos, const T &value);
+    LIter< T > erase(LIter< T > pos);
   private:
     Node< T >* head_;
     size_t size_;
@@ -273,5 +276,31 @@ muh::LCIter< T > muh::List< T >::cend() const
     return nullptr;
   }
   return {head_->prev_};
+}
+
+template <class T>
+muh::LIter< T > muh::List< T >::insert(LIter< T > pos, const T &value)
+{
+  Node< T > *posNode = pos.current_;
+  Node< T > *newNode = new Node< T >{value, posNode, posNode->prev};
+  posNode->prev->next = newNode;
+  posNode->prev = newNode;
+  ++size_;
+  return LIter< T >{newNode};
+}
+
+template <class T>
+muh::LIter< T > muh::List< T >::erase(LIter< T > pos)
+{
+  if (size_ == 0) {
+    throw std::logic_error("Empty list");
+  }
+  Node< T > *next = pos.curr_->next;
+  Node< T > *prev = pos.curr_->prev;
+  delete pos.curr_;
+  next->prev = prev;
+  prev->next = next;
+  --size_;
+  return {next};
 }
 #endif
