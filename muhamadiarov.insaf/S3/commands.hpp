@@ -2,6 +2,8 @@
 #define COMMANDS_HPP
 #include <string>
 #include "graph.hpp"
+#include "hasher.hpp"
+#include "hashTable.hpp"
 
 namespace muhamadiarov
 {
