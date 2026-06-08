@@ -99,4 +99,29 @@ namespace muhamadiarov
       ++printIt;
     }
   }
+
+  void cmdVertexes(std::istream& in, std::ostream& out, GraphTable& graphs)
+  {
+    std::string graphName;
+    in >> graphName;
+    if (!graphs.has(graphName))
+    {
+      out << "<INVALID COMMAND>";
+      return;
+    }
+    const Graph& graph = graphs.cget(graphName);
+    List< std::string > vertices;
+    LCIter< std::string > it = graph.vertices_.cbegin();
+    while (it != graph.vertices_.cend())
+    {
+      vertices.pushBack(*it);
+    }
+    sortStringList(vertices);
+    LCIter< std::string > printIt = vertices.cbegin();
+    while (printIt != vertices.cend())
+    {
+      out << *printIt << '\n';
+      ++printIt;
+    }
+  }
 }
