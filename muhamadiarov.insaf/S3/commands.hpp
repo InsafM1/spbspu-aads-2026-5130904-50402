@@ -10,7 +10,7 @@ namespace muhamadiarov
   using GraphTable = HashTable< std::string, Graph, SipHash< std::string >, std::equal_to< std::string > >;
 
   void cmdGraphs(std::istream &in, std::ostream &out, GraphTable &graphs);
-  void cmdConections(std::istream &in, std::ostream &out, GraphTable &graphs);
+  void cmdVertexes(std::istream &in, std::ostream &out, GraphTable &graphs);
   void cmdOutbound(std::istream &in, std::ostream &out, GraphTable &graphs);
   void cmdInbound(std::istream &in, std::ostream &out, GraphTable &graphs);
   void cmdBind(std::istream &in, std::ostream &out, GraphTable &graphs);
