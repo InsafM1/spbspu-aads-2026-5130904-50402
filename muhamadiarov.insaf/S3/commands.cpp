@@ -338,4 +338,64 @@ namespace muhamadiarov
 
     graphs.add(graphName, newGraph);
   }
+  
+  void cmdMerge(std::istream& in, std::ostream& out, GraphTable& graphs)
+  {
+    std::string newName;
+    std::string oldName1;
+    std::string oldName2;
+    in >> newName >> oldName1 >> oldName2;
+
+    if (graphs.has(newName) || !graphs.has(oldName1) || !graphs.has(oldName2))
+    {
+      out << "<INVALID COMMAND>\n";
+      return;
+    }
+
+    Graph& g1 = graphs.get(oldName1);
+    Graph& g2 = graphs.get(oldName2);
+    Graph merged(5, 5);
+
+    LCIter<std::string> vIt = g1.vertices_.cbegin();
+    while (vIt != g1.vertices_.cend())
+    {
+      merged.addVertex(*vIt);
+      ++vIt;
+    }
+
+    vIt = g2.vertices_.cbegin();
+    while (vIt != g2.vertices_.cend())
+    {
+      merged.addVertex(*vIt);
+      ++vIt;
+    }
+
+    HTIter_k_t eIt= g1.bonds_.begin();
+    while (eIt != g1.bonds_.end())
+    {
+      const Graph::key_t& key = eIt->key_;
+      LCIter<size_t> wIt = eIt->value_.cbegin();
+      while (wIt != eIt->value_.cend())
+      {
+        merged.addConnection(key.first, key.second, *wIt);
+        ++wIt;
+      }
+      ++eIt;
+    }
+
+    eIt = g2.bonds_.begin();
+    while (eIt != g2.bonds_.end())
+    {
+      const Graph::key_t& key = eIt->key_;
+      LCIter<size_t> wIt = eIt->value_.cbegin();
+      while (wIt != eIt->value_.cend())
+      {
+        merged.addConnection(key.first, key.second, *wIt);
+        ++wIt;
+      }
+      ++eIt;
+    }
+
+    graphs.add(newName, merged);
+  }
 }
