@@ -242,4 +242,64 @@ namespace muhamadiarov
       ++printIt;
     }
   }
+
+  void cmdBind(std::istream& in, std::ostream& out, GraphTable& graphs)
+  {
+    std::string graphName;
+    std::string vertexA;
+    std::string vertexB;
+    size_t weight;
+    in >> graphName >> vertexA >> vertexB >> weight;
+
+    if (!graphs.has(graphName))
+    {
+      out << "<INVALID COMMAND>\n";
+      return;
+    }
+
+    Graph& graph = graphs.get(graphName);
+
+    if (!graph.findV(vertexA))
+    {
+      graph.addVertex(vertexA);
+    }
+    if (!graph.findV(vertexB))
+    {
+      graph.addVertex(vertexB);
+    }
+
+    graph.addConnection(vertexA, vertexB, weight);
+  }
+
+  void cmdCut(std::istream& in, std::ostream& out, GraphTable& graphs)
+  {
+    std::string graphName;
+    std::string vertexA;
+    std::string vertexB;
+    size_t weight;
+    in >> graphName >> vertexA >> vertexB >> weight;
+
+    if (!graphs.has(graphName))
+    {
+      out << "<INVALID COMMAND>\n";
+      return;
+    }
+
+    Graph& graph = graphs.get(graphName);
+
+    if (!graph.findV(vertexA) || !graph.findV(vertexB))
+    {
+      out << "<INVALID COMMAND>\n";
+      return;
+    }
+
+    try
+    {
+      graph.removeConnection(vertexA, vertexB, weight);
+    }
+    catch (...)
+    {
+      out << "<INVALID COMMAND>\n";
+    }
+  }
 }
