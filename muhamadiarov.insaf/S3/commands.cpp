@@ -11,6 +11,7 @@ namespace muhamadiarov
     {
       return;
     }
+    
     bool swapped = false;
     do
     {
@@ -37,6 +38,7 @@ namespace muhamadiarov
     {
       return;
     }
+
     bool swapped = false;
     do
     {
@@ -63,6 +65,7 @@ namespace muhamadiarov
     {
       return;
     }
+
     bool swapped = false;
     do
     {
@@ -92,7 +95,9 @@ namespace muhamadiarov
       names.pushBack(it->key_);
       ++it;
     }
+
     sortStringList(names);
+
     LCIter< std::string > printIt = names.cbegin();
     while (printIt != names.cend())
     {
@@ -110,6 +115,7 @@ namespace muhamadiarov
       out << "<INVALID COMMAND>\n";
       return;
     }
+
     const Graph& graph = graphs.cget(graphName);
     List< std::string > vertices;
     LCIter< std::string > it = graph.vertices_.cbegin();
@@ -117,7 +123,9 @@ namespace muhamadiarov
     {
       vertices.pushBack(*it);
     }
+
     sortStringList(vertices);
+
     LCIter< std::string > printIt = vertices.cbegin();
     while (printIt != vertices.cend())
     {
@@ -136,12 +144,15 @@ namespace muhamadiarov
       out << "<INVALID COMMAND>\n";
       return;
     }
+  
     Graph& graph = graphs.get(graphName);
+    
     if (!graph.findV(vertex))
     {
       out << "<INVALID COMMAND>\n";
       return;
     }
+    
     List< std::pair< std::string, List< size_t > > > outbound;
     HTIter_k_t it = graph.bonds_.begin();
     while (it != graph.bonds_.end())
@@ -165,7 +176,9 @@ namespace muhamadiarov
       }
       ++it;
     }
+
     sortOutboundList(outbound);
+
     LIter<std::pair<std::string, List<size_t> > > printIt = outbound.begin();
     while (printIt != outbound.end())
     {
@@ -192,8 +205,9 @@ namespace muhamadiarov
       out << "<INVALID COMMAND>\n";
       return;
     }
-
+    
     Graph& graph = graphs.get(graphName);
+    
     if (!graph.findV(vertex))
     {
       out << "<INVALID COMMAND>\n";
@@ -201,7 +215,6 @@ namespace muhamadiarov
     }
 
     List<std::pair<std::string, List<size_t> > > inbound;
-
     HTIter_k_t it = graph.bonds_.begin();
     while (it != graph.bonds_.end())
     {
@@ -301,5 +314,28 @@ namespace muhamadiarov
     {
       out << "<INVALID COMMAND>\n";
     }
+  }
+
+  void cmdCreate(std::istream& in, std::ostream& out, GraphTable& graphs)
+  {
+    std::string graphName;
+    size_t vertexCount;
+    in >> graphName >> vertexCount;
+
+    if (graphs.has(graphName))
+    {
+      out << "<INVALID COMMAND>\n";
+      return;
+    }
+
+    Graph newGraph(5, 5);
+    for (size_t i = 0; i < vertexCount; ++i)
+    {
+      std::string vertex;
+      in >> vertex;
+      newGraph.addVertex(vertex);
+    }
+
+    graphs.add(graphName, newGraph);
   }
 }
