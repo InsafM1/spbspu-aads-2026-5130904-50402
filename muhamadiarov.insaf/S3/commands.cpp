@@ -2,6 +2,8 @@
 
 namespace muhamadiarov
 {
+  using HTIter_t = HTIter< std::string, Graph, SipHash<std::string>, std::equal_to<std::string> >;  
+
   void sortStringList(List< std::string >& list)
   {
     if (list.size() <= 1)
@@ -78,5 +80,23 @@ namespace muhamadiarov
         ++next;
       }
     } while (swapped);
+  }
+
+  void cmdGraphs(std::istream&, std::ostream& out, GraphTable& graphs)
+  {
+    List< std::string > names;
+    HTIter_t it = graphs.begin();
+    while (it != graphs.end())
+    {
+      names.pushBack(it->key_);
+      ++it;
+    }
+    sortStringList(names);
+    LCIter< std::string > printIt = names.cbegin();
+    while (printIt != names.cend())
+    {
+      out << *printIt << '\n';
+      ++printIt;
+    }
   }
 }
