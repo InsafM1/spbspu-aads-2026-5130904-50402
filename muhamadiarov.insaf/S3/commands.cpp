@@ -398,4 +398,73 @@ namespace muhamadiarov
 
     graphs.add(newName, merged);
   }
+
+  void cmdExtract(std::istream& in, std::ostream& out, GraphTable& graphs)
+  {
+    std::string newName;
+    std::string oldName;
+    size_t vertexCount;
+    in >> newName >> oldName >> vertexCount;
+
+    if (graphs.has(newName) || !graphs.has(oldName))
+    {
+      out << "<INVALID COMMAND>\n";
+      return;
+    }
+
+    Graph& oldGraph = graphs.get(oldName);
+    Graph extracted(5, 5);
+
+    List<std::string> verticesToKeep;
+    for (size_t i = 0; i < vertexCount; ++i)
+    {
+      std::string vertex;
+      in >> vertex;
+
+      if (!oldGraph.findV(vertex))
+      {
+        out << "<INVALID COMMAND>\n";
+        return;
+      }
+
+      verticesToKeep.pushBack(vertex);
+      extracted.addVertex(vertex);
+    }
+
+    HTIter_k_t eIt= oldGraph.bonds_.begin();
+    while (eIt != oldGraph.bonds_.end())
+    {
+      const Graph::key_t& key = eIt->key_;
+
+      bool fromExists = false;
+      bool toExists = false;
+      LCIter<std::string> vIt = verticesToKeep.cbegin();
+      while (vIt != verticesToKeep.cend())
+      {
+        if (*vIt == key.first)
+        {
+          fromExists = true;
+        }
+        if (*vIt == key.second)
+        {
+          toExists = true;
+        }
+        ++vIt;
+      }
+
+      if (fromExists && toExists)
+      {
+        LCIter<size_t> wIt = eIt->value_.cbegin();
+        while (wIt != eIt->value_.cend())
+        {
+          extracted.addConnection(key.first, key.second, *wIt);
+          ++wIt;
+        }
+      }
+
+      ++eIt;
+    }
+
+    graphs.add(newName, extracted);
+  }
 }
