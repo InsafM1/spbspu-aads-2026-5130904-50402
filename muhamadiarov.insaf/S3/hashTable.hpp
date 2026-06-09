@@ -72,7 +72,7 @@ namespace muhamadiarov
     bool findSlot(const Key& k, size_t& id) const;
     bool findFreeSlot(const Key& k, size_t& id) const;
   };
-  
+
   template < class Key, class Value, class Hash, class Equal >
   class HTIter
   {
@@ -83,7 +83,7 @@ namespace muhamadiarov
     Slot< Key, Value >* operator->();
     bool operator==(const HTIter& other) const;
     bool operator!=(const HTIter& other) const;
-    
+
     HTIter& operator++();
     HTIter operator++(int);
   private:
@@ -102,7 +102,7 @@ namespace muhamadiarov
     const Slot< Key, Value >* operator->() const;
     bool operator==(const HTCIter& other) const;
     bool operator!=(const HTCIter& other) const;
-    
+
     HTCIter& operator++();
     HTCIter operator++(int);
   private:
@@ -116,9 +116,9 @@ namespace muh = muhamadiarov;
 
 template < class K, class V >
 muh::Slot< K, V >::Slot(const K& key, const V& value):
-  key_(key), 
-  value_(value), 
-state_(State::OCCUPIED) 
+  key_(key),
+  value_(value),
+state_(State::OCCUPIED)
 {}
 
 template < class K, class V, class H, class E >
@@ -192,7 +192,7 @@ muh::HashTable< K, V, H, E >& muh::HashTable< K, V, H, E >::operator=(const Hash
 {
   if (this != &other) {
     delete[] slots_;
-      
+
     bucketCapacity_ = other.bucketCapacity_;
     bucketCount_ = other.bucketCount_;
     otherflowBucketIndex_ = other.otherflowBucketIndex_;
@@ -214,7 +214,7 @@ muh::HashTable< K, V, H, E >& muh::HashTable< K, V, H, E >::operator=(HashTable&
 {
   if (this != &other) {
     delete[] slots_;
-      
+
     bucketCapacity_ = other.bucketCapacity_;
     bucketCount_ = other.bucketCount_;
     otherflowBucketIndex_ = other.otherflowBucketIndex_;
@@ -223,7 +223,7 @@ muh::HashTable< K, V, H, E >& muh::HashTable< K, V, H, E >::operator=(HashTable&
     slots_ = other.slots_;
     hash_ = std::move(other.hash_);
     equal_ = std::move(other.equal_);
-    
+
     other.slots_ = nullptr;
     other.bucketCapacity_ = 0;
     other.bucketCount_ = 0;
@@ -255,7 +255,7 @@ bool muh::HashTable< K, V, H, E >::findSlot(const K& k, size_t& id) const
   {
     if (slots_[i].state_ == State::EMPTY)
     {
-      return false;
+      break;
     }
     if (slots_[i].state_ == State::OCCUPIED && equal_(slots_[i].key_, k))
     {
@@ -270,7 +270,7 @@ bool muh::HashTable< K, V, H, E >::findSlot(const K& k, size_t& id) const
   {
     if (slots_[i].state_ == State::EMPTY)
     {
-      return false;
+      break;
     }
     if (slots_[i].state_ == State::OCCUPIED && equal_(slots_[i].key_, k))
     {
@@ -393,9 +393,9 @@ V& muh::HashTable< K, V, H, E >::get(const K& k)
   size_t id = 0;
   if (!findSlot(k, id))
   {
-    throw std::out_of_range("Not find the data with this key");    
+    throw std::out_of_range("Not find the data with this key");
   }
-  return slots_[id].value_;  
+  return slots_[id].value_;
 }
 
 template < class K, class V, class H, class E>
@@ -404,9 +404,9 @@ const V& muh::HashTable< K, V, H, E >::cget(const K& k)
   size_t id = 0;
   if (!findSlot(k, id))
   {
-    throw std::out_of_range("Not find the data with this key");    
+    throw std::out_of_range("Not find the data with this key");
   }
-  return slots_[id].value_;  
+  return slots_[id].value_;
 }
 
 template < class K, class V, class H, class E >

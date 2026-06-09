@@ -2,7 +2,7 @@
 
 namespace muhamadiarov
 {
-  using HTIter_t = HTIter< std::string, Graph, SipHash<std::string>, std::equal_to<std::string> >;  
+  using HTIter_t = HTIter< std::string, Graph, SipHash<std::string>, std::equal_to<std::string> >;
   using HTIter_k_t = HTIter< Graph::key_t, List< size_t >, PairHash, std::equal_to< Graph::key_t > >;
 
   void sortStringList(List< std::string >& list)
@@ -11,7 +11,7 @@ namespace muhamadiarov
     {
       return;
     }
-    
+
     bool swapped = false;
     do
     {
@@ -31,7 +31,7 @@ namespace muhamadiarov
       }
     } while (swapped);
   }
-  
+
   void sortWeights(List< size_t >& list)
   {
     if (list.size() <= 1)
@@ -145,15 +145,15 @@ namespace muhamadiarov
       out << "<INVALID COMMAND>\n";
       return;
     }
-  
+
     Graph& graph = graphs.get(graphName);
-    
+
     if (!graph.findV(vertex))
     {
       out << "<INVALID COMMAND>\n";
       return;
     }
-    
+
     List< std::pair< std::string, List< size_t > > > outbound;
     HTIter_k_t it = graph.bonds_.begin();
     while (it != graph.bonds_.end())
@@ -162,7 +162,7 @@ namespace muhamadiarov
       if (key.first == vertex)
       {
         std::pair< std::string, List< size_t > > item;
-        item.first = key.first;
+        item.first = key.second;
         List< size_t > weights;
         LCIter<size_t> wIt = it->value_.cbegin();
         for (size_t i = 0; i < it->value_.size(); ++i)
@@ -206,9 +206,9 @@ namespace muhamadiarov
       out << "<INVALID COMMAND>\n";
       return;
     }
-    
+
     Graph& graph = graphs.get(graphName);
-    
+
     if (!graph.findV(vertex))
     {
       out << "<INVALID COMMAND>\n";
@@ -339,7 +339,7 @@ namespace muhamadiarov
 
     graphs.add(graphName, newGraph);
   }
-  
+
   void cmdMerge(std::istream& in, std::ostream& out, GraphTable& graphs)
   {
     std::string newName;
@@ -350,6 +350,35 @@ namespace muhamadiarov
     if (graphs.has(newName) || !graphs.has(oldName1) || !graphs.has(oldName2))
     {
       out << "<INVALID COMMAND>\n";
+      return;
+    }
+
+    if (oldName1 == oldName2)
+    {
+      Graph& g = graphs.get(oldName1);
+      Graph merged(5, 5);
+
+      LCIter<std::string> vIt = g.vertices_.cbegin();
+      for (size_t i = 0; i < g.vertices_.size(); ++i)
+      {
+        merged.addVertex(*vIt);
+        ++vIt;
+      }
+
+      HTIter_k_t eIt = g.bonds_.begin();
+      while (eIt != g.bonds_.end())
+      {
+        const Graph::key_t& key = eIt->key_;
+        LCIter<size_t> wIt = eIt->value_.cbegin();
+        for (size_t i = 0; i < eIt->value_.size(); ++i)
+        {
+          merged.addConnection(key.first, key.second, *wIt);
+          ++wIt;
+        }
+        ++eIt;
+      }
+
+      graphs.add(newName, merged);
       return;
     }
 
@@ -432,31 +461,32 @@ namespace muhamadiarov
       extracted.addVertex(vertex);
     }
 
-    HTIter_k_t eIt= oldGraph.bonds_.begin();
+    HTIter_k_t eIt = oldGraph.bonds_.begin();
     while (eIt != oldGraph.bonds_.end())
     {
       const Graph::key_t& key = eIt->key_;
 
-      bool fromExists = false;
-      bool toExists = false;
+      bool fromInList = false;
+      bool toInList = false;
+
       LCIter<std::string> vIt = verticesToKeep.cbegin();
       for (size_t i = 0; i < verticesToKeep.size(); ++i)
       {
         if (*vIt == key.first)
         {
-          fromExists = true;
+          fromInList = true;
         }
         if (*vIt == key.second)
         {
-          toExists = true;
+          toInList = true;
         }
         ++vIt;
       }
 
-      if (fromExists && toExists)
+      if (fromInList && toInList)
       {
         LCIter<size_t> wIt = eIt->value_.cbegin();
-        for (size_t j = 0; j < eIt->value_.size(); ++j)
+        for (size_t i = 0; i < eIt->value_.size(); ++i)
         {
           extracted.addConnection(key.first, key.second, *wIt);
           ++wIt;

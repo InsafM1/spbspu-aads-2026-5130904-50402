@@ -75,15 +75,22 @@ void muh::Graph::removeVertex(const std::string& vertex)
   {
     throw std::out_of_range("Vertex not found");
   }
+  List< key_t > toRemove;
   HTIter< key_t, List<size_t>, PairHash, std::equal_to<key_t> > it = bonds_.begin();
   while (it != bonds_.end())
   {
     const key_t& key = it->key_;
     if (key.first == vertex || key.second == vertex)
     {
-      bonds_.drop(key);
+      toRemove.pushBack(key);
     }
     ++it;
+  }
+  LIter< key_t > rmIt = toRemove.begin();
+  for (size_t i = 0; i < toRemove.size(); ++i)
+  {
+    bonds_.drop(*rmIt);
+    ++rmIt;
   }
 }
 
@@ -103,15 +110,6 @@ void muh::Graph::addConnection(const std::string& from, const std::string& to, s
   if (bonds_.has(pair))
   {
     List<size_t>& list = bonds_.get(pair);
-    LCIter<size_t> iter = list.cbegin();
-    for (size_t i = 0; i < list.size(); ++i)
-    {
-      if (*iter == weight)
-      {
-        return;
-      }
-      ++iter;
-    }
     list.pushFront(weight);
   }
   else

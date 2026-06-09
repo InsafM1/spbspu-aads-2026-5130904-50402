@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(test_has)
   TestHash ht(4, 3);
   ht.add(1, 1);
   ht.add(2, 2);
-  
+
   BOOST_CHECK(ht.has(1));
   BOOST_CHECK(ht.has(2));
   BOOST_CHECK(!ht.has(3));
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(test_copy_constructor)
   BOOST_CHECK(ht2.has(1));
   BOOST_CHECK(ht2.has(2));
   BOOST_CHECK_EQUAL(ht2.get(1), 1);
-  
+
   ht2.get(1) = 100;
   BOOST_CHECK_EQUAL(ht2.get(1), 100);
   BOOST_CHECK_EQUAL(ht1.get(1), 1);

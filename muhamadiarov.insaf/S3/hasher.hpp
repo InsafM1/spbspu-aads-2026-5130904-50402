@@ -15,9 +15,9 @@ namespace muhamadiarov
   {
   public:
       SipHash() : h_(0x8badf00d1badb002ULL) {}
-      
+
       explicit SipHash(uint64_t seed) : h_(seed) {}
-      
+
       size_t operator()(const T& v) const
       {
           boost::hash2::siphash_64 h(h_);
