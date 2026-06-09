@@ -89,13 +89,37 @@ void muh::Graph::removeVertex(const std::string& vertex)
 
 void muh::Graph::addConnection(const std::string& from, const std::string& to, size_t weight)
 {
-  if (findC(from, to, weight))
+  if (!findV(from))
   {
-    return;
+    addVertex(from);
   }
+  if (!findV(to))
+  {
+    addVertex(to);
+  }
+
   key_t pair{from, to};
-  List< size_t >& list = bonds_.get(pair);
-  list.pushFront(weight);
+
+  if (bonds_.has(pair))
+  {
+    List<size_t>& list = bonds_.get(pair);
+    LCIter<size_t> iter = list.cbegin();
+    while (iter != list.cend())
+    {
+      if (*iter == weight)
+      {
+        return;
+      }
+      ++iter;
+    }
+    list.pushFront(weight);
+  }
+  else
+  {
+    List<size_t> newList;
+    newList.pushFront(weight);
+    bonds_.add(pair, newList);
+  }
 }
 
 void muh::Graph::removeConnection(const std::string& from, const std::string& to, size_t weight)

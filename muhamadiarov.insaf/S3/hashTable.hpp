@@ -134,6 +134,10 @@ muh::HashTable< K, V, H, E >::HashTable(size_t bucketCapacity, size_t bucketCoun
     throw std::invalid_argument("Count of buckets and their capacity must be > 0");
   }
   slots_ = new Slot< K, V >[capacity_];
+  for (size_t i = 0; i < capacity_; ++i)
+  {
+    slots_[i].state_ = State::EMPTY;
+  }
 }
 
 template < class K, class V, class H, class E >
@@ -429,10 +433,15 @@ muh::HTIter< K, V, H, E >::HTIter(HashTable< K, V, H, E >* ht, size_t index):
 template < class K, class V, class H, class E >
 void muh::HTIter< K, V, H, E >::advanceToNextOccupied()
 {
+  if (!ht_)
+  {
+    return;
+  }
   bool isTrueInd = currentIndex_ < ht_->capacity_;
   while (isTrueInd && ht_->slots_[currentIndex_].state_ != State::OCCUPIED)
   {
     ++currentIndex_;
+    isTrueInd = currentIndex_ < ht_->capacity_;
   }
 }
 
@@ -514,6 +523,10 @@ muh::HTCIter< K, V, H, E >::HTCIter(const HashTable< K, V, H, E >* ht, size_t in
 template < class K, class V, class H, class E >
 void muh::HTCIter< K, V, H, E >::advanceToNextOccupied()
 {
+  if (!ht_)
+  {
+    return;
+  }
   bool isTrueInd = currentIndex_ < ht_->capacity_;
   while (isTrueInd && ht_->slots_[currentIndex_].state_ != State::OCCUPIED)
   {

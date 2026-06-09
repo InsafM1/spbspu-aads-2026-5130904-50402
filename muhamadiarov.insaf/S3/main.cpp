@@ -25,25 +25,25 @@ int main(int argc, char *argv[])
   
   std::string graphName;
   size_t edges = 0;
-  while (file >> graphName >> edges)
+  try
   {
-    muh::Graph g;
-    for (size_t i = 0; i < edges; ++i)
+    while (file >> graphName >> edges)
     {
-      std::string v1, v2;
-      size_t w = 0;
-      file >> v1 >> v2 >> w;
-      if (!g.findV(v1))
+      muh::Graph g;
+      for (size_t i = 0; i < edges; ++i)
       {
-        g.addVertex(v1);
+        std::string v1, v2;
+        size_t w = 0;
+        file >> v1 >> v2 >> w;
+        g.addConnection(v1, v2, w);
       }
-      if (!g.findV(v2))
-      {
-        g.addVertex(v2);
-      }
-      g.addConnection(v1, v2, w);
+      graphs.add(graphName, std::move(g));
     }
-    graphs.add(graphName, std::move(g));
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "Error loading graph: " << e.what() << '\n';
+    return 1;
   }
   file.close();
   

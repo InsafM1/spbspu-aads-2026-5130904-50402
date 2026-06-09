@@ -19,7 +19,7 @@ namespace muhamadiarov
       LIter< std::string > it = list.begin();
       LIter< std::string > next = it;
       ++next;
-      while (next != list.end())
+      for (size_t i = 1; i < list.size(); ++i)
       {
         if (*next < *it)
         {
@@ -46,7 +46,7 @@ namespace muhamadiarov
       LIter< size_t > it = list.begin();
       LIter< size_t > next = it;
       ++next;
-      while (next != list.end())
+      for (size_t i = 1; i < list.size(); ++i)
       {
         if (*next < *it)
         {
@@ -73,7 +73,7 @@ namespace muhamadiarov
       LIter< std::pair< std::string, List< size_t > > > it = list.begin();
       LIter< std::pair< std::string, List< size_t > > > next = it;
       ++next;
-      while (next != list.end())
+      for (size_t i = 1; i < list.size(); ++i)
       {
         if (next->first < it->first)
         {
@@ -99,7 +99,7 @@ namespace muhamadiarov
     sortStringList(names);
 
     LCIter< std::string > printIt = names.cbegin();
-    while (printIt != names.cend())
+    for (size_t i = 0; i < names.size(); ++i)
     {
       out << *printIt << '\n';
       ++printIt;
@@ -119,15 +119,16 @@ namespace muhamadiarov
     const Graph& graph = graphs.cget(graphName);
     List< std::string > vertices;
     LCIter< std::string > it = graph.vertices_.cbegin();
-    while (it != graph.vertices_.cend())
+    for (size_t i = 0; i < graph.vertices_.size(); ++i)
     {
       vertices.pushBack(*it);
+      ++it;
     }
 
     sortStringList(vertices);
 
     LCIter< std::string > printIt = vertices.cbegin();
-    while (printIt != vertices.cend())
+    for (size_t i = 0; i < vertices.size(); ++i)
     {
       out << *printIt << '\n';
       ++printIt;
@@ -164,7 +165,7 @@ namespace muhamadiarov
         item.first = key.first;
         List< size_t > weights;
         LCIter<size_t> wIt = it->value_.cbegin();
-        while (wIt != it->value_.cend())
+        for (size_t i = 0; i < it->value_.size(); ++i)
         {
           weights.pushBack(*wIt);
           ++wIt;
@@ -180,11 +181,11 @@ namespace muhamadiarov
     sortOutboundList(outbound);
 
     LIter<std::pair<std::string, List<size_t> > > printIt = outbound.begin();
-    while (printIt != outbound.end())
+    for (size_t i = 0; i < outbound.size(); ++i)
     {
       out << printIt->first;
       LCIter<size_t> wIt = printIt->second.cbegin();
-      while (wIt != printIt->second.cend())
+      for (size_t j = 0; j < printIt->second.size(); ++j)
       {
         out << " " << *wIt;
         ++wIt;
@@ -226,7 +227,7 @@ namespace muhamadiarov
 
         List<size_t> weights;
         LCIter<size_t> wIt = it->value_.cbegin();
-        while (wIt != it->value_.cend())
+        for (size_t i = 0; i < it->value_.size(); ++i)
         {
           weights.pushBack(*wIt);
           ++wIt;
@@ -242,11 +243,11 @@ namespace muhamadiarov
     sortOutboundList(inbound);
 
     LIter<std::pair<std::string, List<size_t> > > printIt = inbound.begin();
-    while (printIt != inbound.end())
+    for (size_t i = 0; i < inbound.size(); ++i)
     {
       out << printIt->first;
       LCIter<size_t> wIt = printIt->second.cbegin();
-      while (wIt != printIt->second.cend())
+      for (size_t j = 0; j < printIt->second.size(); ++j)
       {
         out << " " << *wIt;
         ++wIt;
@@ -357,14 +358,14 @@ namespace muhamadiarov
     Graph merged(5, 5);
 
     LCIter<std::string> vIt = g1.vertices_.cbegin();
-    while (vIt != g1.vertices_.cend())
+    for (size_t i = 0; i < g1.vertices_.size(); ++i)
     {
       merged.addVertex(*vIt);
       ++vIt;
     }
 
     vIt = g2.vertices_.cbegin();
-    while (vIt != g2.vertices_.cend())
+    for (size_t i = 0; i < g2.vertices_.size(); ++i)
     {
       merged.addVertex(*vIt);
       ++vIt;
@@ -375,7 +376,7 @@ namespace muhamadiarov
     {
       const Graph::key_t& key = eIt->key_;
       LCIter<size_t> wIt = eIt->value_.cbegin();
-      while (wIt != eIt->value_.cend())
+      for (size_t i = 0; i < eIt->value_.size(); ++i)
       {
         merged.addConnection(key.first, key.second, *wIt);
         ++wIt;
@@ -388,7 +389,7 @@ namespace muhamadiarov
     {
       const Graph::key_t& key = eIt->key_;
       LCIter<size_t> wIt = eIt->value_.cbegin();
-      while (wIt != eIt->value_.cend())
+      for (size_t i = 0; i < eIt->value_.size(); ++i)
       {
         merged.addConnection(key.first, key.second, *wIt);
         ++wIt;
@@ -439,7 +440,7 @@ namespace muhamadiarov
       bool fromExists = false;
       bool toExists = false;
       LCIter<std::string> vIt = verticesToKeep.cbegin();
-      while (vIt != verticesToKeep.cend())
+      for (size_t i = 0; i < verticesToKeep.size(); ++i)
       {
         if (*vIt == key.first)
         {
@@ -455,7 +456,7 @@ namespace muhamadiarov
       if (fromExists && toExists)
       {
         LCIter<size_t> wIt = eIt->value_.cbegin();
-        while (wIt != eIt->value_.cend())
+        for (size_t j = 0; j < eIt->value_.size(); ++j)
         {
           extracted.addConnection(key.first, key.second, *wIt);
           ++wIt;
