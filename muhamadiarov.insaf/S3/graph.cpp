@@ -15,7 +15,7 @@ muh::Graph::Graph(size_t bucketCapacity, size_t bucketCounts):
 bool muh::Graph::findV(const std::string& vertex) const
 {
   LCIter< std::string  > iter = vertices_.cbegin();
-  while (iter != vertices_.cend())
+  for (size_t i = 0; i < vertices_.size(); ++i)
   {
     if (*iter == vertex)
     {
@@ -35,7 +35,7 @@ bool muh::Graph::findC(const std::string& from, const std::string& to, size_t we
   }
   List< size_t >& list = bonds_.get(pair);
   LCIter< size_t > iter = list.cbegin();
-  while (iter != list.cend())
+  for (size_t i = 0; i < list.size(); ++i)
   {
     if (*iter == weight)
     {
@@ -59,7 +59,7 @@ void muh::Graph::removeVertex(const std::string& vertex)
 {
   LIter< std::string > iter = vertices_.begin();
   bool found = false;
-  while (iter != vertices_.end())
+  for (size_t i = 0; i < vertices_.size(); ++i)
   {
     if (*iter == vertex)
     {
@@ -104,7 +104,7 @@ void muh::Graph::addConnection(const std::string& from, const std::string& to, s
   {
     List<size_t>& list = bonds_.get(pair);
     LCIter<size_t> iter = list.cbegin();
-    while (iter != list.cend())
+    for (size_t i = 0; i < list.size(); ++i)
     {
       if (*iter == weight)
       {
@@ -127,19 +127,30 @@ void muh::Graph::removeConnection(const std::string& from, const std::string& to
   key_t pair{from, to};
   if (!bonds_.has(pair))
   {
-    return;
+    throw std::out_of_range("There is not this connection");
   }
   List< size_t >& list = bonds_.get(pair);
   LIter< size_t > iter = list.begin();
-  while (iter != list.end())
+  bool found = false;
+  for (size_t i = 0; i < list.size(); ++i)
   {
     if (*iter == weight)
     {
       iter = list.erase(iter);
+      found = true;
+      break;
     }
     else
     {
       ++iter;
     }
+  }
+  if (!found)
+  {
+    throw std::out_of_range("weight not found");
+  }
+  if (list.size() == 0)
+  {
+    List< size_t > removed = bonds_.drop(pair);
   }
 }

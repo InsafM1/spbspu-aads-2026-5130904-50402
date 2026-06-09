@@ -159,7 +159,7 @@ namespace muhamadiarov
     while (it != graph.bonds_.end())
     {
       const Graph::key_t& key = it->key_;
-      if (key.second == vertex)
+      if (key.first == vertex)
       {
         std::pair< std::string, List< size_t > > item;
         item.first = key.first;
