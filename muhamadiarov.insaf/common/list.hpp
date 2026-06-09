@@ -282,7 +282,7 @@ template <class T>
 void muh::List< T >::insert(LIter< T > pos, const T &value)
 {
   Node< T >* posNode = pos.current_;
-  
+
   if (!head_)
   {
     head_ = new Node< T >{value, nullptr, nullptr};
