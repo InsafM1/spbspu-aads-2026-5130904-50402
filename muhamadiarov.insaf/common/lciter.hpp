@@ -1,6 +1,7 @@
 #ifndef LCITER_HPP
 #define LCITER_HPP
 #include "node.hpp"
+#include <stdexcept>
 
 namespace muhamadiarov
 {
@@ -18,6 +19,7 @@ namespace muhamadiarov
     bool operator==(const LCIter< T >& other) const;
     bool operator!=(const LCIter< T >& other) const;
     const T& operator*() const;
+    const T* operator->() const;
   private:
     const Node< T >* current_;
     friend class List< T >;
@@ -77,5 +79,15 @@ template <class T>
 const T& muh::LCIter< T >::operator*() const
 {
   return current_->data_;
+}
+
+template <class T>
+const T* muh::LCIter< T >::operator->() const
+{
+  if (!current_)
+  {
+    throw std::runtime_error("dereferencing nullptr");
+  }
+  return &(current_->data_);
 }
 #endif
