@@ -112,8 +112,7 @@ namespace muhamadiarov
     in >> graphName;
     if (!graphs.has(graphName))
     {
-      out << "<INVALID COMMAND>\n";
-      return;
+      throw std::runtime_error("Invalid name of graph");
     }
 
     const Graph& graph = graphs.cget(graphName);
@@ -142,16 +141,14 @@ namespace muhamadiarov
     in >> graphName >> vertex;
     if (!graphs.has(graphName))
     {
-      out << "<INVALID COMMAND>\n";
-      return;
+      throw std::runtime_error("Invalid name of graph");
     }
 
     Graph& graph = graphs.get(graphName);
 
     if (!graph.findV(vertex))
     {
-      out << "<INVALID COMMAND>\n";
-      return;
+      throw std::runtime_error("There is not this vertex");
     }
 
     List< std::pair< std::string, List< size_t > > > outbound;
@@ -203,16 +200,14 @@ namespace muhamadiarov
 
     if (!graphs.has(graphName))
     {
-      out << "<INVALID COMMAND>\n";
-      return;
+      throw std::runtime_error("Invalid name of graph");
     }
 
     Graph& graph = graphs.get(graphName);
 
     if (!graph.findV(vertex))
     {
-      out << "<INVALID COMMAND>\n";
-      return;
+      throw std::runtime_error("There is not this vertex");
     }
 
     List<std::pair<std::string, List<size_t> > > inbound;
@@ -257,7 +252,7 @@ namespace muhamadiarov
     }
   }
 
-  void cmdBind(std::istream& in, std::ostream& out, GraphTable& graphs)
+  void cmdBind(std::istream& in, std::ostream&, GraphTable& graphs)
   {
     std::string graphName;
     std::string vertexA;
@@ -267,8 +262,7 @@ namespace muhamadiarov
 
     if (!graphs.has(graphName))
     {
-      out << "<INVALID COMMAND>\n";
-      return;
+      throw std::runtime_error("Invalid name of graph");
     }
 
     Graph& graph = graphs.get(graphName);
@@ -285,7 +279,7 @@ namespace muhamadiarov
     graph.addConnection(vertexA, vertexB, weight);
   }
 
-  void cmdCut(std::istream& in, std::ostream& out, GraphTable& graphs)
+  void cmdCut(std::istream& in, std::ostream&, GraphTable& graphs)
   {
     std::string graphName;
     std::string vertexA;
@@ -295,52 +289,52 @@ namespace muhamadiarov
 
     if (!graphs.has(graphName))
     {
-      out << "<INVALID COMMAND>\n";
-      return;
+      throw std::runtime_error("Invalid name of graph");
     }
 
     Graph& graph = graphs.get(graphName);
 
     if (!graph.findV(vertexA) || !graph.findV(vertexB))
     {
-      out << "<INVALID COMMAND>\n";
-      return;
+      throw std::runtime_error("There are not these vertexes");
     }
-
-    try
-    {
-      graph.removeConnection(vertexA, vertexB, weight);
-    }
-    catch (...)
-    {
-      out << "<INVALID COMMAND>\n";
-    }
+    graph.removeConnection(vertexA, vertexB, weight);
   }
 
-  void cmdCreate(std::istream& in, std::ostream& out, GraphTable& graphs)
+  void cmdCreate(std::istream& in, std::ostream&, GraphTable& graphs)
   {
     std::string graphName;
-    size_t vertexCount;
-    in >> graphName >> vertexCount;
-
+    in >> graphName;
+    if (!in)
+    {
+      throw std::runtime_error("Invalid input");
+    }
     if (graphs.has(graphName))
     {
-      out << "<INVALID COMMAND>\n";
-      return;
+      throw std::runtime_error("Graph already exists");
     }
-
+    size_t vertexCount = 0;
+    in >> vertexCount;
+    if (!in)
+    {
+      throw std::runtime_error("Invalid vertex count");
+    }
     Graph newGraph(5, 5);
     for (size_t i = 0; i < vertexCount; ++i)
     {
       std::string vertex;
       in >> vertex;
+      if (!in)
+      {
+        throw std::runtime_error("Invalid vertex name");
+      }
       newGraph.addVertex(vertex);
     }
 
     graphs.add(graphName, newGraph);
   }
 
-  void cmdMerge(std::istream& in, std::ostream& out, GraphTable& graphs)
+  void cmdMerge(std::istream& in, std::ostream&, GraphTable& graphs)
   {
     std::string newName;
     std::string oldName1;
@@ -349,37 +343,7 @@ namespace muhamadiarov
 
     if (graphs.has(newName) || !graphs.has(oldName1) || !graphs.has(oldName2))
     {
-      out << "<INVALID COMMAND>\n";
-      return;
-    }
-
-    if (oldName1 == oldName2)
-    {
-      Graph& g = graphs.get(oldName1);
-      Graph merged(5, 5);
-
-      LCIter<std::string> vIt = g.vertices_.cbegin();
-      for (size_t i = 0; i < g.vertices_.size(); ++i)
-      {
-        merged.addVertex(*vIt);
-        ++vIt;
-      }
-
-      HTIter_k_t eIt = g.bonds_.begin();
-      while (eIt != g.bonds_.end())
-      {
-        const Graph::key_t& key = eIt->key_;
-        LCIter<size_t> wIt = eIt->value_.cbegin();
-        for (size_t i = 0; i < eIt->value_.size(); ++i)
-        {
-          merged.addConnection(key.first, key.second, *wIt);
-          ++wIt;
-        }
-        ++eIt;
-      }
-
-      graphs.add(newName, merged);
-      return;
+      throw std::runtime_error("Invalid");
     }
 
     Graph& g1 = graphs.get(oldName1);
@@ -429,7 +393,7 @@ namespace muhamadiarov
     graphs.add(newName, merged);
   }
 
-  void cmdExtract(std::istream& in, std::ostream& out, GraphTable& graphs)
+  void cmdExtract(std::istream& in, std::ostream&, GraphTable& graphs)
   {
     std::string newName;
     std::string oldName;
@@ -438,8 +402,7 @@ namespace muhamadiarov
 
     if (graphs.has(newName) || !graphs.has(oldName))
     {
-      out << "<INVALID COMMAND>\n";
-      return;
+      throw std::runtime_error("Invalid input");
     }
 
     Graph& oldGraph = graphs.get(oldName);
@@ -453,8 +416,7 @@ namespace muhamadiarov
 
       if (!oldGraph.findV(vertex))
       {
-        out << "<INVALID COMMAND>\n";
-        return;
+        throw std::out_of_range("Vertex missing");
       }
 
       verticesToKeep.pushBack(vertex);

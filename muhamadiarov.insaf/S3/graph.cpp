@@ -96,15 +96,8 @@ void muh::Graph::removeVertex(const std::string& vertex)
 
 void muh::Graph::addConnection(const std::string& from, const std::string& to, size_t weight)
 {
-  if (!findV(from))
-  {
-    addVertex(from);
-  }
-  if (!findV(to))
-  {
-    addVertex(to);
-  }
-
+  addVertex(from);
+  addVertex(to);
   key_t pair{from, to};
 
   if (bonds_.has(pair))
