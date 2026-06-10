@@ -6,7 +6,7 @@
 
 namespace muhamadiarov
 {
-  template < class Key, class Value >
+  template< class Key, class Value >
   struct TreeNode
   {
     std::pair< Key, Value > val_;
@@ -18,11 +18,11 @@ namespace muhamadiarov
     TreeNode(const Key& key, const Value& value, TreeNode* parent);
     TreeNode(Key&& key, Value&& value, TreeNode* parent);
   };
-  template < class Key, class Value >
+  template< class Key, class Value >
   class BSIterator;
-  template < class Key, class Value >
+  template< class Key, class Value >
   class BSConstIterator;
-  template < class Key, class Value, class Compare = std::less< Key > >
+  template< class Key, class Value, class Compare = std::less< Key > >
   class BSTree
   {
     using Iter_t = BSIterator< Key, Value >;
@@ -65,15 +65,16 @@ namespace muhamadiarov
     ConstIter_t cend() const noexcept;
 
   private:
-    TreeNode< Key, Value >* root;
+    TreeNode< Key, Value >* root_;
     size_t size_;
     Compare comp_;
+    void copyTree(TreeNode< Key, Value >* source, TreeNode< Key, Value >* parent);
   };
 }
 
 namespace muh = muhamadiarov;
 
-template < class Key, class Value >
+template< class Key, class Value >
 muh::TreeNode< Key, Value >::TreeNode():
   val_({Key(), Value()}),
   left_(nullptr),
@@ -81,7 +82,7 @@ muh::TreeNode< Key, Value >::TreeNode():
   parent_(nullptr)
 {}
 
-template < class Key, class Value >
+template< class Key, class Value >
 muh::TreeNode< Key, Value >::TreeNode(const Key& key, const Value& value, TreeNode* parent):
   val_({key, value}),
   left_(nullptr),
@@ -89,11 +90,82 @@ muh::TreeNode< Key, Value >::TreeNode(const Key& key, const Value& value, TreeNo
   parent_(parent)
 {}
 
-template < class Key, class Value >
+template< class Key, class Value >
 muh::TreeNode< Key, Value >::TreeNode(Key&& key, Value&& value, TreeNode* parent):
   val_({std::move(key), std::move(value)}),
   left_(nullptr),
   right_(nullptr),
   parent_(parent)
 {}
+
+template< class Key, class Value, class Compare >
+muh::BSTree< Key, Value, Compare >::BSTree():
+  root_(new TreeNode< Key, Value >()),
+  size_(0),
+  comp_()
+{}
+
+template< class Key, class Value, class Compare >
+muh::BSTree< Key, Value, Compare >::BSTree(const BSTree& other):
+  root_(new TreeNode< Key, Value >()),
+  size_(0),
+  comp_(other.comp_)
+{
+  if (!other.empty())
+  {
+    copyTree(other.root_->left_, nullptr);
+  }
+}
+
+template< class Key, class Value, class Compare >
+muh::BSTree< Key, Value, Compare >::BSTree(BSTree&& other) noexcept:
+  root_(other.root_),
+  size_(other.size_),
+  comp_(std::move(other.comp_))
+{
+  other.root_ = nullptr;
+  other.size_ = 0;
+}
+
+template< class Key, class Value, class Compare >
+muh::BSTree< Key, Value, Compare >::~BSTree()
+{
+  clear();
+  delete root_;
+}
+
+template<class Key, class Value, class Compare>
+void muh::BSTree<Key, Value, Compare>::copyTree(
+  TreeNode< Key, Value >* source,
+  TreeNode< Key, Value >* parent
+)
+{
+  if (!source)
+  {
+    return;
+  }
+
+  TreeNode<Key, Value>* newNode = new TreeNode<Key, Value>(
+    source->val_.first,
+    source->val_.second,
+    parent
+  );
+  
+  if (!parent)
+  {
+    root_->left_ = newNode;
+  } 
+  else if (comp_(source->val_.first, parent->val_.first))
+  {
+    parent->left_ = newNode;
+  }
+  else
+  {
+    parent->right_ = newNode;
+  }
+  
+  copyTree(source->left_, newNode);
+  copyTree(source->right_, newNode);
+  ++size_;
+}
 #endif
