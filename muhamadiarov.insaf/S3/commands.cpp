@@ -104,6 +104,11 @@ namespace muhamadiarov
       out << *printIt << '\n';
       ++printIt;
     }
+
+    if (names.size() == 0)
+    {
+      out << '\n';
+    }
   }
 
   void cmdVertexes(std::istream& in, std::ostream& out, GraphTable& graphs)
@@ -131,6 +136,11 @@ namespace muhamadiarov
     {
       out << *printIt << '\n';
       ++printIt;
+    }
+
+    if (vertices.size() == 0)
+    {
+      out << '\n';
     }
   }
 
@@ -177,6 +187,7 @@ namespace muhamadiarov
 
     sortOutboundList(outbound);
 
+    bool isPrint = false;
     LIter<std::pair<std::string, List<size_t> > > printIt = outbound.begin();
     for (size_t i = 0; i < outbound.size(); ++i)
     {
@@ -186,9 +197,15 @@ namespace muhamadiarov
       {
         out << " " << *wIt;
         ++wIt;
+        isPrint = true;
       }
-      out << "\n";
+      out << '\n';
       ++printIt;
+    }
+
+    if (!isPrint)
+    {
+      out << '\n';
     }
   }
 
@@ -237,6 +254,7 @@ namespace muhamadiarov
 
     sortOutboundList(inbound);
 
+    bool isPrint = false;
     LIter<std::pair<std::string, List<size_t> > > printIt = inbound.begin();
     for (size_t i = 0; i < inbound.size(); ++i)
     {
@@ -246,9 +264,15 @@ namespace muhamadiarov
       {
         out << " " << *wIt;
         ++wIt;
+        isPrint = true;
       }
-      out << "\n";
+      out << '\n';
       ++printIt;
+    }
+
+    if (!isPrint)
+    {
+      out << '\n';
     }
   }
 
