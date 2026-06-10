@@ -70,4 +70,30 @@ namespace muhamadiarov
     Compare comp_;
   };
 }
+
+namespace muh = muhamadiarov;
+
+template < class Key, class Value >
+muh::TreeNode< Key, Value >::TreeNode():
+  val_({Key(), Value()}),
+  left_(nullptr),
+  right_(nullptr),
+  parent_(nullptr)
+{}
+
+template < class Key, class Value >
+muh::TreeNode< Key, Value >::TreeNode(const Key& key, const Value& value, TreeNode* parent):
+  val_({key, value}),
+  left_(nullptr),
+  right_(nullptr),
+  parent_(parent)
+{}
+
+template < class Key, class Value >
+muh::TreeNode< Key, Value >::TreeNode(Key&& key, Value&& value, TreeNode* parent):
+  val_({std::move(key), std::move(value)}),
+  left_(nullptr),
+  right_(nullptr),
+  parent_(parent)
+{}
 #endif
