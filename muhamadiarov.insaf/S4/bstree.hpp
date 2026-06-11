@@ -77,6 +77,7 @@ namespace muhamadiarov
     void clearSubtree(TreeNode< Key, Value >* node) noexcept;
     TreeNode< Key, Value >* getMinimum(TreeNode< Key, Value >* node) const noexcept;
     TreeNode< Key, Value >* getMaximum(TreeNode< Key, Value >* node) const noexcept;
+    size_t getHeight(const TreeNode< Key, Value >* node) const noexcept;
   };
 
   template< class Key, class Value >
@@ -352,6 +353,30 @@ template< class Key, class Value, class Compare >
 bool muh::BSTree< Key, Value, Compare >::empty() const noexcept
 {
   return size_ == 0;
+}
+
+template< class Key, class Value, class Compare >
+size_t muh::BSTree< Key, Value, Compare >::height(ConstIter_t it) const
+{
+  return getHeight(*it);
+}
+
+template< class Key, class Value, class Compare >
+size_t muh::BSTree< Key, Value, Compare >::height() const
+{
+  return getHeight(root_->left_);
+}
+
+template<class Key, class Value, class Compare>
+size_t muh::BSTree<Key, Value, Compare>::getHeight(
+  const TreeNode<Key, Value>* node
+) const noexcept
+{
+  if (!node)
+  {
+    return 0;
+  }
+  return 1 + std::max(getHeight(node->left_), getHeight(node->right_));
 }
 
 template<class Key, class Value, class Compare>
