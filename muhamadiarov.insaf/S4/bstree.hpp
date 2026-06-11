@@ -73,6 +73,10 @@ namespace muhamadiarov
     void copyTree(TreeNode< Key, Value >* source, TreeNode< Key, Value >* parent);
     TreeNode< Key, Value >* findNode(const Key& k) const noexcept;
     void removeNode(TreeNode< Key, Value >* node);
+    void replaceNodeInParent(TreeNode< Key, Value >* node, TreeNode< Key, Value >* newChild);
+    void clearSubtree(TreeNode< Key, Value >* node) noexcept;
+    TreeNode< Key, Value >* getMinimum(TreeNode< Key, Value >* node) const noexcept;
+    TreeNode< Key, Value >* getMaximum(TreeNode< Key, Value >* node) const noexcept;
   };
 
   template< class Key, class Value >
@@ -383,6 +387,75 @@ void muh::BSTree<Key, Value, Compare>::copyTree(
   copyTree(source->left_, newNode);
   copyTree(source->right_, newNode);
   ++size_;
+}
+
+template< class Key, class Value, class Compare >
+void muh::BSTree< Key, Value, Compare >::clear()
+{
+  clearSubtree(root_->left_);
+  root_->left_ = nullptr;
+  size_ = 0;
+}
+
+template< class Key, class Value, class Compare >
+void muh::BSTree< Key, Value, Compare >::removeNode(TreeNode< Key, Value >* node)
+{
+  if (!node->left_ && !node->right_)
+  {
+    replaceNodeInParent(node, nullptr);
+  }
+  else if (!node->left_)
+  {
+    replaceNodeInParent(node, node->right_);
+    node->right_->parent_ = node->parent_;
+  }
+  else if (!node->right_)
+  {
+    replaceNodeInParent(node, node->left_);
+    node->left_->parent_ = node->parent_;
+  }
+  else
+  {
+    TreeNode<Key, Value>* successor = getMinimum(node->right_);
+    node->val_ = successor->val_;
+    removeNode(successor);
+  }
+}
+
+template<class Key, class Value, class Compare >
+void muh::BSTree< Key, Value, Compare >::replaceNodeInParent(
+  TreeNode< Key, Value >* node,
+  TreeNode< Key, Value >* newChild
+)
+{
+  if (!node->parent_)
+  {
+    root_->left_ = newChild;
+  }
+  else if (node->parent_->left_ == node)
+  {
+    node->parent_->left_ = newChild;
+  }
+  else
+  {
+    node->parent_->right_ = newChild;
+  }
+  if (newChild)
+  {
+    newChild->parent_ = node->parent_;
+  } 
+}
+
+template< class Key, class Value, class Compare >
+void muh::BSTree< Key, Value, Compare >::clearSubtree(TreeNode< Key, Value >* node) noexcept
+{
+  if (!node)
+  {
+    return;
+  }
+  clearSubtree(node->left_);
+  clearSubtree(node->right_);
+  delete node;
 }
 
 template< class Key, class Value >
