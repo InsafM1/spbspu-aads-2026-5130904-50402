@@ -26,6 +26,7 @@ namespace muhamadiarov
   template< class Key, class Value, class Compare = std::less< Key > >
   class BSTree
   {
+  public:
     using Iter_t = BSIterator< Key, Value >;
     using ConstIter_t = BSConstIterator< Key, Value >;
     BSTree();
@@ -72,8 +73,6 @@ namespace muhamadiarov
 
     void copyTree(TreeNode< Key, Value >* source, TreeNode< Key, Value >* parent);
     TreeNode< Key, Value >* findNode(const Key& k) const noexcept;
-    void removeNode(TreeNode< Key, Value >* node);
-    void replaceNodeInParent(TreeNode< Key, Value >* node, TreeNode< Key, Value >* newChild);
     void clearSubtree(TreeNode< Key, Value >* node) noexcept;
     TreeNode< Key, Value >* getMinimum(TreeNode< Key, Value >* node) const noexcept;
     TreeNode< Key, Value >* getMaximum(TreeNode< Key, Value >* node) const noexcept;
@@ -102,7 +101,7 @@ namespace muhamadiarov
     bool operator!=(const BSIterator& other) const;
   private:
     TreeNode< Key, Value >* curr_;
-    friend class BSTree< Key, Value, std::less< Key > >;
+    template< class K, class V, class C > friend class BSTree;
 
     static TreeNode< Key, Value >* getNext(TreeNode< Key, Value >* node);
     static TreeNode< Key, Value >* getPrevious(TreeNode< Key, Value >* node);
@@ -113,12 +112,12 @@ namespace muhamadiarov
   {
   public:
     BSConstIterator();
-    explicit BSConstIterator(const TreeNode< Key, Value >* node);
+    explicit BSConstIterator(TreeNode< Key, Value >* node);
     BSConstIterator(const BSConstIterator&) = default;
     BSConstIterator& operator=(const BSConstIterator&) = default;
 
-    std::pair< Key, Value >& operator*() const;
-    std::pair< Key, Value >* operator->() const;
+    const std::pair< Key, Value >& operator*() const;
+    const std::pair< Key, Value >* operator->() const;
 
     BSConstIterator& operator++();
     BSConstIterator operator++(int);
@@ -129,11 +128,11 @@ namespace muhamadiarov
     bool operator==(const BSConstIterator& other) const;
     bool operator!=(const BSConstIterator& other) const;
   private:
-    const TreeNode< Key, Value >* curr_;
-    friend class BSTree< Key, Value, std::less< Key > >;
+    TreeNode< Key, Value >* curr_;
+    template< class K, class V, class C > friend class BSTree;
 
-    static const TreeNode< Key, Value >* getNext(const TreeNode< Key, Value >* node);
-    static const TreeNode< Key, Value >* getPrevious(const TreeNode< Key, Value >* node);
+    static TreeNode< Key, Value >* getNext(TreeNode< Key, Value >* node);
+    static TreeNode< Key, Value >* getPrevious(TreeNode< Key, Value >* node);
   };
 }
 
@@ -195,8 +194,11 @@ muh::BSTree< Key, Value, Compare >::BSTree(BSTree&& other) noexcept:
 template< class Key, class Value, class Compare >
 muh::BSTree< Key, Value, Compare >::~BSTree()
 {
-  clear();
-  delete root_;
+  if (root_)
+  {
+    clear();
+    delete root_;
+  }
 }
 
 template< class Key, class Value, class Compare >
@@ -217,14 +219,14 @@ muh::BSTree< Key, Value, Compare >& muh::BSTree< Key, Value, Compare >::operator
   BSTree&& other
 ) noexcept
 {
-  if (this != &other)
+  if (this != std::addressof(other))
   {
     clear();
     delete root_;
     root_ = other.root_;
     size_ = other.size_;
     comp_ = std::move(other.comp_);
-    other.root_ = nullptr;
+    other.root_ = nullptr; 
     other.size_ = 0;
   }
   return *this;
@@ -309,7 +311,35 @@ void muh::BSTree< Key, Value, Compare >::drop(Key k)
   {
     throw std::out_of_range("Key not found");
   }
-  removeNode(node);
+  
+  if (node->left_ && node->right_)
+  {
+    TreeNode<Key, Value>* succ = getMinimum(node->right_);
+    node->val_.first = std::move(succ->val_.first);
+    node->val_.second = std::move(succ->val_.second);
+    node = succ;
+  }
+  
+  TreeNode<Key, Value>* child = (node->left_) ? node->left_ : node->right_;
+  
+  if (child)
+  {
+    child->parent_ = node->parent_;
+  }
+  
+  if (!node->parent_)
+  {
+    root_->left_ = child;
+  }
+  else if (node->parent_->left_ == node)
+  {
+    node->parent_->left_ = child;
+  }
+  else
+  {
+    node->parent_->right_ = child;
+  }
+  
   delete node;
   --size_;
 }
@@ -433,11 +463,11 @@ muh::BSConstIterator< Key, Value > muh::BSTree< Key, Value, Compare >::rotateLar
 )
 {
   TreeNode< Key, Value > *node = it.curr_;
-  if (!node || !node->left_ || !node->left_->right_)
+  if (!node || !node->right_ || !node->right_->left_)
   {
     return it;
   }
-  rotateRight(ConstIter_t(node->left_));
+  rotateRight(ConstIter_t(node->right_));
   return rotateLeft(it);
 }
 
@@ -447,11 +477,11 @@ muh::BSConstIterator< Key, Value > muh::BSTree< Key, Value, Compare >::rotateLar
 )
 {
   TreeNode< Key, Value > *node = it.curr_;
-  if (!node || !node->right_ || !node->right_->left_)
+  if (!node || !node->left_ || !node->left_->right_)
   {
     return it;
   }
-  rotateLeft(ConstIter_t(node->right_));
+  rotateLeft(ConstIter_t(node->left_));
   return rotateRight(it);
 }
 
@@ -517,58 +547,12 @@ void muh::BSTree<Key, Value, Compare>::copyTree(
 template< class Key, class Value, class Compare >
 void muh::BSTree< Key, Value, Compare >::clear()
 {
-  clearSubtree(root_->left_);
-  root_->left_ = nullptr;
+  if (root_)
+  {
+    clearSubtree(root_->left_);
+    root_->left_ = nullptr;
+  }
   size_ = 0;
-}
-
-template< class Key, class Value, class Compare >
-void muh::BSTree< Key, Value, Compare >::removeNode(TreeNode< Key, Value >* node)
-{
-  if (!node->left_ && !node->right_)
-  {
-    replaceNodeInParent(node, nullptr);
-  }
-  else if (!node->left_)
-  {
-    replaceNodeInParent(node, node->right_);
-    node->right_->parent_ = node->parent_;
-  }
-  else if (!node->right_)
-  {
-    replaceNodeInParent(node, node->left_);
-    node->left_->parent_ = node->parent_;
-  }
-  else
-  {
-    TreeNode<Key, Value>* successor = getMinimum(node->right_);
-    node->val_ = successor->val_;
-    removeNode(successor);
-  }
-}
-
-template<class Key, class Value, class Compare >
-void muh::BSTree< Key, Value, Compare >::replaceNodeInParent(
-  TreeNode< Key, Value >* node,
-  TreeNode< Key, Value >* newChild
-)
-{
-  if (!node->parent_)
-  {
-    root_->left_ = newChild;
-  }
-  else if (node->parent_->left_ == node)
-  {
-    node->parent_->left_ = newChild;
-  }
-  else
-  {
-    node->parent_->right_ = newChild;
-  }
-  if (newChild)
-  {
-    newChild->parent_ = node->parent_;
-  } 
 }
 
 template< class Key, class Value, class Compare >
@@ -618,6 +602,10 @@ muh::TreeNode<Key, Value>* muh::BSTree<Key, Value, Compare>::getMaximum(
 template<class Key, class Value, class Compare>
 muh::BSIterator< Key, Value > muh::BSTree< Key, Value, Compare >::begin()
 {
+  if (!root_)
+  {
+    return Iter_t(nullptr);
+  }
   return Iter_t(getMinimum(root_->left_));
 }
 
@@ -630,6 +618,10 @@ muh::BSIterator< Key, Value > muh::BSTree< Key, Value, Compare >::end() noexcept
 template<class Key, class Value, class Compare>
 muh::BSConstIterator< Key, Value > muh::BSTree< Key, Value, Compare >::begin() const
 {
+  if (!root_)
+  {
+    return ConstIter_t(nullptr);
+  }
   return ConstIter_t(getMinimum(root_->left_));
 }
 
@@ -743,7 +735,7 @@ muh::TreeNode< Key, Value >* muh::BSIterator< Key, Value >::getNext(
     return node;
   }
 
-  const TreeNode< Key, Value >* parent = node->parent_;
+  TreeNode< Key, Value >* parent = node->parent_;
   while (parent && node == parent->right_)
   {
     node = parent;
@@ -762,9 +754,9 @@ muh::TreeNode< Key, Value >* muh::BSIterator< Key, Value >::getPrevious(
     return nullptr;
   }
 
-  if (node->left)
+  if (node->left_)
   {
-    node = node->left;
+    node = node->left_;
     while (node->right_)
     {
       node = node->right_;
@@ -772,7 +764,7 @@ muh::TreeNode< Key, Value >* muh::BSIterator< Key, Value >::getPrevious(
     return node;
   }
 
-  const TreeNode< Key, Value >* parent = node->parent_;
+  TreeNode< Key, Value >* parent = node->parent_;
   while (parent && node == parent->left_)
   {
     node = parent;
@@ -787,12 +779,12 @@ muh::BSConstIterator< Key, Value >::BSConstIterator():
 {}
 
 template< class Key, class Value >
-muh::BSConstIterator< Key, Value >::BSConstIterator(const TreeNode< Key, Value >* node):
+muh::BSConstIterator< Key, Value >::BSConstIterator(TreeNode< Key, Value >* node):
   curr_(node)
 {}
 
 template< class Key, class Value >
-std::pair< Key, Value >& muh::BSConstIterator< Key, Value >::operator*() const
+const std::pair< Key, Value >& muh::BSConstIterator< Key, Value >::operator*() const
 {
   if (!curr_)
   {
@@ -802,7 +794,7 @@ std::pair< Key, Value >& muh::BSConstIterator< Key, Value >::operator*() const
 }
 
 template< class Key, class Value >
-std::pair< Key, Value >* muh::BSConstIterator< Key, Value >::operator->() const
+const std::pair< Key, Value >* muh::BSConstIterator< Key, Value >::operator->() const
 {
   if (!curr_)
   {
@@ -858,8 +850,8 @@ bool muh::BSConstIterator< Key, Value >::operator!=(
 }
 
 template < class Key, class Value >
-const muh::TreeNode< Key, Value >* muh::BSConstIterator< Key, Value >::getNext(
-  const TreeNode< Key, Value >* node
+muh::TreeNode< Key, Value >* muh::BSConstIterator< Key, Value >::getNext(
+  TreeNode< Key, Value >* node
 )
 {
   if (!node)
@@ -877,7 +869,7 @@ const muh::TreeNode< Key, Value >* muh::BSConstIterator< Key, Value >::getNext(
     return node;
   }
 
-  const TreeNode< Key, Value >* parent = node->parent_;
+  TreeNode< Key, Value >* parent = node->parent_;
   while (parent && node == parent->right_)
   {
     node = parent;
@@ -887,8 +879,8 @@ const muh::TreeNode< Key, Value >* muh::BSConstIterator< Key, Value >::getNext(
 }
 
 template< class Key, class Value >
-const muh::TreeNode< Key, Value >* muh::BSConstIterator< Key, Value >::getPrevious(
-  const TreeNode< Key, Value >* node
+muh::TreeNode< Key, Value >* muh::BSConstIterator< Key, Value >::getPrevious(
+  TreeNode< Key, Value >* node
 )
 {
   if (!node)
@@ -896,9 +888,9 @@ const muh::TreeNode< Key, Value >* muh::BSConstIterator< Key, Value >::getPrevio
     return nullptr;
   }
 
-  if (node->left)
+  if (node->left_)
   {
-    node = node->left;
+    node = node->left_;
     while (node->right_)
     {
       node = node->right_;
@@ -906,7 +898,7 @@ const muh::TreeNode< Key, Value >* muh::BSConstIterator< Key, Value >::getPrevio
     return node;
   }
 
-  const TreeNode< Key, Value >* parent = node->parent_;
+  TreeNode< Key, Value >* parent = node->parent_;
   while (parent && node == parent->left_)
   {
     node = parent;
