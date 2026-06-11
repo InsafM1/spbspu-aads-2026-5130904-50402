@@ -53,7 +53,7 @@ void muh::cmdComplement(std::istream& in, std::ostream&, ManyDatasets_t& ds)
     throw std::runtime_error("Invalid input");
   }
 
-  if (ds.has(newName) || !ds.has(name1) || !ds.has(name2))
+  if (!ds.has(name1) || !ds.has(name2))
   {
     throw std::runtime_error("Incorrect datasets");
   }
@@ -81,7 +81,7 @@ void muh::cmdIntersect(std::istream& in, std::ostream&, ManyDatasets_t& ds)
     throw std::runtime_error("Invalid input");
   }
 
-  if (ds.has(newName) || !ds.has(name1) || !ds.has(name2))
+  if (!ds.has(name1) || !ds.has(name2))
   {
     throw std::runtime_error("Incorrect datasets");
   }
@@ -109,7 +109,7 @@ void muh::cmdUnion(std::istream& in, std::ostream&, ManyDatasets_t& ds)
     throw std::runtime_error("Invalid input");
   }
 
-  if (ds.has(newName) || !ds.has(name1) || !ds.has(name2))
+  if (!ds.has(name1) || !ds.has(name2))
   {
     throw std::runtime_error("Incorrect datasets");
   }
