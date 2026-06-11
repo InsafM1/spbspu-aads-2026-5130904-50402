@@ -93,10 +93,10 @@ namespace muhamadiarov
     std::pair< Key, Value >* operator->();
 
     BSIterator& operator++();
-    BSIterator& operator++(int);
+    BSIterator operator++(int);
     
     BSIterator& operator--();
-    BSIterator& operator--(int);
+    BSIterator operator--(int);
 
     bool operator==(const BSIterator& other) const;
     bool operator!=(const BSIterator& other) const;
@@ -121,10 +121,10 @@ namespace muhamadiarov
     std::pair< Key, Value >* operator->() const;
 
     BSConstIterator& operator++();
-    BSConstIterator& operator++(int);
+    BSConstIterator operator++(int);
     
     BSConstIterator& operator--();
-    BSConstIterator& operator--(int);
+    BSConstIterator operator--(int);
 
     bool operator==(const BSConstIterator& other) const;
     bool operator!=(const BSConstIterator& other) const;
@@ -375,7 +375,7 @@ muh::BSConstIterator< Key, Value > muh::BSTree< Key, Value, Compare >::rotateLef
   child->parent_ = node->parent_;
   if (!node->parent_)
   {
-    root_->right_ = child;
+    root_->left_ = child;
   }
   else if (node == node->parent_->left_)
   {
@@ -411,7 +411,7 @@ muh::BSConstIterator< Key, Value > muh::BSTree< Key, Value, Compare >::rotateRig
   child->parent_ = node->parent_;
   if (!node->parent_)
   {
-    root_->right_ = child;
+    root_->left_ = child;
   }
   else if (node == node->parent_->left_)
   {
@@ -458,7 +458,7 @@ muh::BSConstIterator< Key, Value > muh::BSTree< Key, Value, Compare >::rotateLar
 template< class Key, class Value, class Compare >
 size_t muh::BSTree< Key, Value, Compare >::height(ConstIter_t it) const
 {
-  return getHeight(*it);
+  return getHeight(it.curr_);
 }
 
 template< class Key, class Value, class Compare >
@@ -689,7 +689,7 @@ muh::BSIterator< Key, Value >& muh::BSIterator< Key, Value >::operator++()
 }
 
 template< class Key, class Value >
-muh::BSIterator< Key, Value >& muh::BSIterator< Key, Value >::operator++(int)
+muh::BSIterator< Key, Value > muh::BSIterator< Key, Value >::operator++(int)
 {
   BSIterator temp(*this);
   ++(*this);
@@ -704,7 +704,7 @@ muh::BSIterator< Key, Value >& muh::BSIterator< Key, Value >::operator--()
 }
 
 template< class Key, class Value >
-muh::BSIterator< Key, Value >& muh::BSIterator< Key, Value >::operator--(int)
+muh::BSIterator< Key, Value > muh::BSIterator< Key, Value >::operator--(int)
 {
   BSIterator temp(*this);
   --(*this);
@@ -819,7 +819,7 @@ muh::BSConstIterator< Key, Value >& muh::BSConstIterator< Key, Value >::operator
 }
 
 template< class Key, class Value >
-muh::BSConstIterator< Key, Value >& muh::BSConstIterator< Key, Value >::operator++(int)
+muh::BSConstIterator< Key, Value > muh::BSConstIterator< Key, Value >::operator++(int)
 {
   BSConstIterator temp(*this);
   ++(*this);
@@ -834,7 +834,7 @@ muh::BSConstIterator< Key, Value >& muh::BSConstIterator< Key, Value >::operator
 }
 
 template< class Key, class Value >
-muh::BSConstIterator< Key, Value >& muh::BSConstIterator< Key, Value >::operator--(int)
+muh::BSConstIterator< Key, Value > muh::BSConstIterator< Key, Value >::operator--(int)
 {
   BSConstIterator temp(*this);
   --(*this);
