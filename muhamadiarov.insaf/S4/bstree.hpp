@@ -134,6 +134,45 @@ muh::BSTree< Key, Value, Compare >::~BSTree()
   delete root_;
 }
 
+template< class Key, class Value, class Compare >
+muh::BSTree< Key, Value, Compare >& muh::BSTree< Key, Value, Compare >::operator=(
+  const BSTree& other
+)
+{
+  if (this != &other)
+  {
+    BSTree temp(other);
+    swap(temp);
+  }
+  return *this;
+}
+
+template< class Key, class Value, class Compare >
+muh::BSTree< Key, Value, Compare >& muh::BSTree< Key, Value, Compare >::operator=(
+  BSTree&& other
+) noexcept
+{
+  if (this != &other)
+  {
+    clear();
+    delete root_;
+    root_ = other.root_;
+    size_ = other.size_;
+    comp_ = std::move(other.comp_);
+    other.root_ = nullptr;
+    other.size_ = 0;
+  }
+  return *this;
+}
+
+template< class Key, class Value, class Compare >
+void muh::BSTree< Key, Value, Compare >::swap(BSTree& other) noexcept
+{
+  std::swap(root_, other.root_);
+  std::swap(size_, other.size_);
+  std::swap(comp_, other.comp_);
+}
+
 template<class Key, class Value, class Compare>
 void muh::BSTree<Key, Value, Compare>::copyTree(
   TreeNode< Key, Value >* source,
