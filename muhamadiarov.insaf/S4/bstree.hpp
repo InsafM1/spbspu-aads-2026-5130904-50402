@@ -60,7 +60,7 @@ namespace muhamadiarov
 
     Iter_t begin();
     Iter_t end() noexcept;
-    ConstIter_t begin() const noexcept;
+    ConstIter_t begin() const;
     ConstIter_t end() const noexcept;
     ConstIter_t cbegin() const;
     ConstIter_t cend() const noexcept;
@@ -456,6 +456,74 @@ void muh::BSTree< Key, Value, Compare >::clearSubtree(TreeNode< Key, Value >* no
   clearSubtree(node->left_);
   clearSubtree(node->right_);
   delete node;
+}
+
+template<class Key, class Value, class Compare>
+muh::TreeNode<Key, Value>* muh::BSTree<Key, Value, Compare>::getMinimum(
+  TreeNode<Key, Value>* node
+) const noexcept
+{
+  if (!node)
+  {
+    return nullptr;
+  }
+  while (node->left_)
+  {
+    node = node->left_;
+  }
+  return node;
+}
+
+template<class Key, class Value, class Compare>
+muh::TreeNode<Key, Value>* muh::BSTree<Key, Value, Compare>::getMaximum(
+  TreeNode<Key, Value>* node
+) const noexcept
+{
+  if (!node)
+  {
+    return nullptr;
+  }
+  while (node->right_)
+  {
+    node = node->right_;
+  }
+  return node;
+}
+
+template<class Key, class Value, class Compare>
+muh::BSIterator< Key, Value > muh::BSTree< Key, Value, Compare >::begin()
+{
+  return Iter_t(getMinimum(root_->left_));
+}
+
+template<class Key, class Value, class Compare>
+muh::BSIterator< Key, Value > muh::BSTree< Key, Value, Compare >::end() noexcept
+{
+  return Iter_t(nullptr);
+}
+
+template<class Key, class Value, class Compare>
+muh::BSConstIterator< Key, Value > muh::BSTree< Key, Value, Compare >::begin() const
+{
+  return ConstIter_t(getMinimum(root_->left_));
+}
+
+template<class Key, class Value, class Compare>
+muh::BSConstIterator< Key, Value > muh::BSTree< Key, Value, Compare >::end() const noexcept
+{
+    return ConstIter_t(nullptr);
+}
+
+template<class Key, class Value, class Compare>
+muh::BSConstIterator< Key, Value > muh::BSTree< Key, Value, Compare >::cbegin() const
+{
+    return begin();
+}
+
+template<class Key, class Value, class Compare>
+muh::BSConstIterator< Key, Value > muh::BSTree< Key, Value, Compare >::cend() const noexcept
+{
+    return end();
 }
 
 template< class Key, class Value >
