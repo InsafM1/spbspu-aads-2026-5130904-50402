@@ -105,7 +105,7 @@ namespace muhamadiarov
   {
   public:
     BSConstIterator();
-    explicit BSConstIterator(TreeNode< Key, Value >* node);
+    explicit BSConstIterator(const TreeNode< Key, Value >* node);
     BSConstIterator(const BSConstIterator&) = default;
     BSConstIterator& operator=(const BSConstIterator&) = default;
 
@@ -369,6 +369,141 @@ muh::TreeNode< Key, Value >* muh::BSIterator< Key, Value >::getNext(
 template< class Key, class Value >
 muh::TreeNode< Key, Value >* muh::BSIterator< Key, Value >::getPrevious(
   TreeNode< Key, Value >* node
+)
+{
+  if (!node)
+  {
+    return nullptr;
+  }
+
+  if (node->left)
+  {
+    node = node->left;
+    while (node->right_)
+    {
+      node = node->right_;
+    }
+    return node;
+  }
+
+  const TreeNode< Key, Value >* parent = node->parent_;
+  while (parent && node == parent->left_)
+  {
+    node = parent;
+    parent = parent->parent_;
+  }
+  return parent;
+}
+
+
+template< class Key, class Value >
+muh::BSConstIterator< Key, Value >::BSConstIterator():
+  curr_(nullptr)
+{}
+
+template< class Key, class Value >
+muh::BSConstIterator< Key, Value >::BSConstIterator(const TreeNode< Key, Value >* node):
+  curr_(node)
+{}
+
+template< class Key, class Value >
+std::pair< Key, Value >& muh::BSConstIterator< Key, Value >::operator*() const
+{
+  if (!curr_)
+  {
+    throw std::runtime_error("Dereferencing nullptr");
+  }
+  return curr_->val_;
+}
+
+template< class Key, class Value >
+std::pair< Key, Value >* muh::BSConstIterator< Key, Value >::operator->() const
+{
+  if (!curr_)
+  {
+    throw std::runtime_error("Dereferencing nullptr");
+  }
+  return &(curr_->val_);
+}
+
+template< class Key, class Value >
+muh::BSConstIterator< Key, Value >& muh::BSConstIterator< Key, Value >::operator++()
+{
+  curr_ = getNext(curr_);
+  return *this;
+}
+
+template< class Key, class Value >
+muh::BSConstIterator< Key, Value >& muh::BSConstIterator< Key, Value >::operator++(int)
+{
+  BSConstIterator temp(*this);
+  ++(*this);
+  return temp;
+}
+
+template< class Key, class Value >
+muh::BSConstIterator< Key, Value >& muh::BSConstIterator< Key, Value >::operator--()
+{
+  curr_ = getPrevious(curr_);
+  return *this;
+}
+
+template< class Key, class Value >
+muh::BSConstIterator< Key, Value >& muh::BSConstIterator< Key, Value >::operator--(int)
+{
+  BSConstIterator temp(*this);
+  --(*this);
+  return temp;
+}
+
+template< class Key, class Value >
+bool muh::BSConstIterator< Key, Value >::operator==(
+  const BSConstIterator< Key, Value >& other
+) const
+{
+  return curr_ == other.curr_;
+}
+
+template< class Key, class Value >
+bool muh::BSConstIterator< Key, Value >::operator!=(
+  const BSConstIterator< Key, Value >& other
+) const
+{
+  return !(*this == other);
+}
+
+template < class Key, class Value >
+const muh::TreeNode< Key, Value >* muh::BSConstIterator< Key, Value >::getNext(
+  const TreeNode< Key, Value >* node
+)
+{
+  if (!node)
+  {
+    return nullptr;
+  }
+
+  if (node->right_)
+  {
+    node = node->right_;
+    while (node->left_)
+    {
+      node = node->left_;
+    }
+    return node;
+  }
+
+  const TreeNode< Key, Value >* parent = node->parent_;
+  while (parent && node == parent->right_)
+  {
+    node = parent;
+    parent = parent->parent_;
+  }
+  return parent;
+}
+
+template< class Key, class Value >
+const muh::TreeNode< Key, Value >* muh::BSConstIterator< Key, Value >::getPrevious(
+  const TreeNode< Key, Value >* node
 )
 {
   if (!node)
