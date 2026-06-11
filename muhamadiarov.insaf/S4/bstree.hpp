@@ -356,6 +356,106 @@ bool muh::BSTree< Key, Value, Compare >::empty() const noexcept
 }
 
 template< class Key, class Value, class Compare >
+muh::BSConstIterator< Key, Value > muh::BSTree< Key, Value, Compare >::rotateLeft(
+  ConstIter_t it
+)
+{
+  TreeNode< Key, Value > *node = it.curr_;
+  if (!node || !node->right_)
+  {
+    return it;
+  }
+
+  TreeNode< Key, Value > *child = node->right_;
+  node->right_ = child->left_;
+  if (child->left_)
+  {
+    child->left_->parent_ = node;
+  }
+  child->parent_ = node->parent_;
+  if (!node->parent_)
+  {
+    root_->right_ = child;
+  }
+  else if (node == node->parent_->left_)
+  {
+    node->parent_->left_ = child;
+  }
+  else
+  {
+    node->parent_->right_ = child;
+  }
+
+  child->left_ = node;
+  node->parent_ = child;
+  return ConstIter_t(child);
+}
+
+template< class Key, class Value, class Compare >
+muh::BSConstIterator< Key, Value > muh::BSTree< Key, Value, Compare >::rotateRight(
+  ConstIter_t it
+)
+{
+  TreeNode< Key, Value > *node = it.curr_;
+  if (!node || !node->left_)
+  {
+    return it;
+  }
+
+  TreeNode< Key, Value > *child = node->left_;
+  node->left_ = child->right_;
+  if (child->right_)
+  {
+    child->right_->parent_ = node;
+  }
+  child->parent_ = node->parent_;
+  if (!node->parent_)
+  {
+    root_->right_ = child;
+  }
+  else if (node == node->parent_->left_)
+  {
+    node->parent_->left_ = child;
+  }
+  else
+  {
+    node->parent_->right_ = child;
+  }
+
+  child->right_ = node;
+  node->parent_ = child;
+  return  ConstIter_t(child);
+}
+
+template< class Key, class Value, class Compare >
+muh::BSConstIterator< Key, Value > muh::BSTree< Key, Value, Compare >::rotateLargeLeft(
+  ConstIter_t it
+)
+{
+  TreeNode< Key, Value > *node = it.curr_;
+  if (!node || !node->left_ || !node->left_->right_)
+  {
+    return it;
+  }
+  rotateRight(ConstIter_t(node->left_));
+  return rotateLeft(it);
+}
+
+template< class Key, class Value, class Compare >
+muh::BSConstIterator< Key, Value > muh::BSTree< Key, Value, Compare >::rotateLargeRight(
+  ConstIter_t it
+)
+{
+  TreeNode< Key, Value > *node = it.curr_;
+  if (!node || !node->right_ || !node->right_->left_)
+  {
+    return it;
+  }
+  rotateLeft(ConstIter_t(node->right_));
+  return rotateRight(it);
+}
+
+template< class Key, class Value, class Compare >
 size_t muh::BSTree< Key, Value, Compare >::height(ConstIter_t it) const
 {
   return getHeight(*it);
