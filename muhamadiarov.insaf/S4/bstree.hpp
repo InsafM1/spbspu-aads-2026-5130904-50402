@@ -69,7 +69,10 @@ namespace muhamadiarov
     TreeNode< Key, Value >* root_;
     size_t size_;
     Compare comp_;
+
     void copyTree(TreeNode< Key, Value >* source, TreeNode< Key, Value >* parent);
+    TreeNode< Key, Value >* findNode(const Key& k) const noexcept;
+    void removeNode(TreeNode< Key, Value >* node);
   };
 
   template< class Key, class Value >
@@ -228,6 +231,123 @@ void muh::BSTree< Key, Value, Compare >::swap(BSTree& other) noexcept
   std::swap(root_, other.root_);
   std::swap(size_, other.size_);
   std::swap(comp_, other.comp_);
+}
+
+template< class Key, class Value, class Compare >
+void muh::BSTree< Key, Value, Compare >::push(const Key& k, const Value& v)
+{
+  TreeNode<Key, Value>* parent = nullptr;
+  TreeNode<Key, Value>* current = root_->left_;
+  
+  while (current)
+  {
+    parent = current;
+    if (comp_(k, current->val_.first))
+    {
+      current = current->left_;
+    }
+    else if (comp_(current->val_.first, k))
+    {
+      current = current->right_;
+    } 
+    else
+    {
+      current->val_.second = v;
+      return;
+    }
+  }
+  
+  TreeNode<Key, Value>* newNode = new TreeNode<Key, Value>(k, v, parent);
+  
+  if (!parent)
+  {
+    root_->left_ = newNode;
+  }
+  else if (comp_(k, parent->val_.first))
+  {
+    parent->left_ = newNode;
+  }
+  else
+  {
+    parent->right_ = newNode;
+  }
+  ++size_;
+}
+
+template< class Key, class Value, class Compare >
+Value& muh::BSTree< Key, Value, Compare >::get(Key k)
+{
+  TreeNode<Key, Value>* node = findNode(k);
+  if (!node)
+  {
+    throw std::out_of_range("Key not found");
+  }
+  return node->val_.second;
+}
+
+template< class Key, class Value, class Compare >
+const Value& muh::BSTree< Key, Value, Compare >::get(Key k) const
+{
+  const TreeNode<Key, Value>* node = findNode(k);
+  if (!node)
+  {
+    throw std::out_of_range("Key not found");
+  }
+  return node->val_.second;
+}
+
+template< class Key, class Value, class Compare >
+void muh::BSTree< Key, Value, Compare >::drop(Key k)
+{
+  TreeNode<Key, Value>* node = findNode(k);
+  if (!node)
+  {
+    throw std::out_of_range("Key not found");
+  }
+  removeNode(node);
+  delete node;
+  --size_;
+}
+
+template<class Key, class Value, class Compare>
+muh::TreeNode<Key, Value>* muh::BSTree<Key, Value, Compare>::findNode(
+  const Key& k
+) const noexcept
+{
+  TreeNode<Key, Value>* current = root_->left_;
+  while (current)
+  {
+    if (comp_(k, current->val_.first))
+    {
+      current = current->left_;
+    }
+    else if (comp_(current->val_.first, k))
+    {
+      current = current->right_;
+    }
+    else {
+      return current;
+    }
+  }
+  return nullptr;
+}
+
+template< class Key, class Value, class Compare >
+bool muh::BSTree< Key, Value, Compare >::has(const Key& k) const noexcept
+{
+  return findNode(k) != nullptr;
+}
+
+template< class Key, class Value, class Compare >
+size_t muh::BSTree< Key, Value, Compare >::size() const noexcept
+{
+  return size_;
+}
+
+template< class Key, class Value, class Compare >
+bool muh::BSTree< Key, Value, Compare >::empty() const noexcept
+{
+  return size_ == 0;
 }
 
 template<class Key, class Value, class Compare>
@@ -394,7 +514,6 @@ muh::TreeNode< Key, Value >* muh::BSIterator< Key, Value >::getPrevious(
   }
   return parent;
 }
-
 
 template< class Key, class Value >
 muh::BSConstIterator< Key, Value >::BSConstIterator():
