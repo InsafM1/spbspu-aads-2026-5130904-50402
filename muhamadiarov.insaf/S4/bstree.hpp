@@ -70,6 +70,56 @@ namespace muhamadiarov
     Compare comp_;
     void copyTree(TreeNode< Key, Value >* source, TreeNode< Key, Value >* parent);
   };
+
+  template< class Key, class Value >
+  class BSIterator
+  {
+  public:
+    BSIterator();
+    explicit BSIterator(TreeNode< Key, Value >* node);
+    BSIterator(const BSIterator&) = default;
+    BSIterator& operator=(const BSIterator&) = default;
+
+    std::pair< Key, Value >& operator*();
+    std::pair< Key, Value >* operator->();
+
+    BSIterator& operator++();
+    BSIterator& operator++(int);
+    
+    BSIterator& operator--();
+    BSIterator& operator--(int);
+
+    bool operator==(const BSIterator& other) const;
+    bool operator!=(const BSIterator& other) const;
+  private:
+    TreeNode< Key, Value >* curr_;
+    friend class BSTree< Key, Value, std::less< Key > >;
+  };
+
+  template< class Key, class Value >
+  class BSConstIterator
+  {
+  public:
+    BSConstIterator();
+    explicit BSConstIterator(TreeNode< Key, Value >* node);
+    BSConstIterator(const BSConstIterator&) = default;
+    BSConstIterator& operator=(const BSConstIterator&) = default;
+
+    std::pair< Key, Value >& operator*() const;
+    std::pair< Key, Value >* operator->() const;
+
+    BSConstIterator& operator++();
+    BSConstIterator& operator++(int);
+    
+    BSConstIterator& operator--();
+    BSConstIterator& operator--(int);
+
+    bool operator==(const BSConstIterator& other) const;
+    bool operator!=(const BSConstIterator& other) const;
+  private:
+    TreeNode< Key, Value >* curr_;
+    friend class BSTree< Key, Value, std::less< Key > >;
+  };
 }
 
 namespace muh = muhamadiarov;
