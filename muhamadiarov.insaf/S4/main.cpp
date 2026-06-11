@@ -20,7 +20,7 @@ int main(int argc, char** argv)
     std::cerr << "Cannot open file\n";
     return 1;
   }
-  
+
   muh::ManyDatasets_t ds;
   std::string word;
   std::string dataset;
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
   commands.push("complement", muh::cmdComplement);
   commands.push("intersect", muh::cmdIntersect);
   commands.push("union", muh::cmdUnion);
-  
+
   std::string cmd;
   while (std::cin >> cmd) {
     try {

@@ -19,9 +19,9 @@ BOOST_AUTO_TEST_CASE(CopyConstructor)
   BSTree<int, std::string> tree1;
   tree1.push(10, "ten");
   tree1.push(5, "five");
-  
+
   BSTree<int, std::string> tree2(tree1);
-  
+
   BOOST_CHECK_EQUAL(tree1.size(), tree2.size());
   BOOST_CHECK(tree2.has(10));
   BOOST_CHECK(tree2.has(5));
@@ -33,9 +33,9 @@ BOOST_AUTO_TEST_CASE(MoveConstructor)
   BSTree<int, std::string> tree1;
   tree1.push(10, "ten");
   tree1.push(20, "twenty");
-  
+
   BSTree<int, std::string> tree2(std::move(tree1));
-  
+
   BOOST_CHECK_EQUAL(tree2.size(), 2);
   BOOST_CHECK(tree2.has(10));
   BOOST_CHECK(tree1.empty());
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(PushSingleElement)
 {
   BSTree<int, std::string> tree;
   tree.push(42, "answer");
-  
+
   BOOST_CHECK_EQUAL(tree.size(), 1);
   BOOST_CHECK(tree.has(42));
   BOOST_CHECK_EQUAL(tree.get(42), "answer");
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(PushDuplicateKeyUpdate)
   BSTree<int, std::string> tree;
   tree.push(1, "one");
   tree.push(1, "ONE");
-  
+
   BOOST_CHECK_EQUAL(tree.size(), 1);
   BOOST_CHECK_EQUAL(tree.get(1), "ONE");
 }
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(GetNonExistentThrows)
 {
   BSTree<int, std::string> tree;
   tree.push(1, "one");
-  
+
   BOOST_CHECK_THROW(tree.get(2), std::out_of_range);
 }
 
@@ -75,9 +75,9 @@ BOOST_AUTO_TEST_CASE(DropLeafNode)
   tree.push(10, "ten");
   tree.push(5, "five");
   tree.push(15, "fifteen");
-  
+
   tree.drop(5);
-  
+
   BOOST_CHECK_EQUAL(tree.size(), 2);
   BOOST_CHECK(!tree.has(5));
   BOOST_CHECK(tree.has(10));
@@ -94,9 +94,9 @@ BOOST_AUTO_TEST_CASE(DropNodeWithTwoChildren)
   tree.push(40, "forty");
   tree.push(60, "sixty");
   tree.push(80, "eighty");
-  
+
   tree.drop(50);
-  
+
   BOOST_CHECK_EQUAL(tree.size(), 6);
   BOOST_CHECK(!tree.has(50));
   BOOST_CHECK(tree.has(30));
@@ -109,9 +109,9 @@ BOOST_AUTO_TEST_CASE(DropRoot)
   tree.push(10, "ten");
   tree.push(5, "five");
   tree.push(15, "fifteen");
-  
+
   tree.drop(10);
-  
+
   BOOST_CHECK_EQUAL(tree.size(), 2);
   BOOST_CHECK(!tree.has(10));
   BOOST_CHECK(tree.has(5));
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(DropNonExistentThrows)
 {
   BSTree<int, std::string> tree;
   tree.push(1, "one");
-  
+
   BOOST_CHECK_THROW(tree.drop(2), std::out_of_range);
 }
 
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE(BalancedTreeHeight)
   tree.push(40, "forty");
   tree.push(60, "sixty");
   tree.push(80, "eighty");
-  
+
   BOOST_CHECK_EQUAL(tree.height(), 3);
 }
 
@@ -173,9 +173,9 @@ BOOST_AUTO_TEST_CASE(Clear)
   tree.push(1, "one");
   tree.push(2, "two");
   tree.push(3, "three");
-  
+
   tree.clear();
-  
+
   BOOST_CHECK(tree.empty());
   BOOST_CHECK_EQUAL(tree.size(), 0);
   BOOST_CHECK(!tree.has(1));
@@ -186,12 +186,12 @@ BOOST_AUTO_TEST_CASE(Swap)
   BSTree<int, std::string> tree1;
   tree1.push(1, "one");
   tree1.push(2, "two");
-  
+
   BSTree<int, std::string> tree2;
   tree2.push(3, "three");
-  
+
   tree1.swap(tree2);
-  
+
   BOOST_CHECK_EQUAL(tree1.size(), 1);
   BOOST_CHECK_EQUAL(tree2.size(), 2);
   BOOST_CHECK(tree1.has(3));
@@ -203,10 +203,10 @@ BOOST_AUTO_TEST_CASE(RotateLeft)
   BSTree<int, std::string> tree;
   tree.push(10, "ten");
   tree.push(20, "twenty");
-  
+
   auto it = tree.cbegin();
   tree.rotateLeft(it);
-  
+
   auto newIt = tree.cbegin();
   BOOST_CHECK_EQUAL(newIt->first, 10);
   ++newIt;
@@ -218,11 +218,11 @@ BOOST_AUTO_TEST_CASE(RotateRight)
   BSTree<int, std::string> tree;
   tree.push(20, "twenty");
   tree.push(10, "ten");
-  
+
   auto it = tree.cbegin();
   ++it;
   tree.rotateRight(it);
-  
+
   BOOST_CHECK(tree.has(10));
   BOOST_CHECK(tree.has(20));
 }

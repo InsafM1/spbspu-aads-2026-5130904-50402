@@ -33,7 +33,7 @@ namespace muhamadiarov
     BSTree(const BSTree& other);
     BSTree(BSTree&& other) noexcept;
     ~BSTree();
-    
+
     BSTree& operator=(const BSTree& other);
     BSTree& operator=(BSTree&& other) noexcept;
 
@@ -42,7 +42,7 @@ namespace muhamadiarov
     const Value& get(Key k) const;
     void drop(Key k);
     bool has(const Key& k) const noexcept;
-    
+
     ConstIter_t rotateLeft(ConstIter_t it);
     ConstIter_t rotateRight(ConstIter_t it);
 
@@ -51,7 +51,7 @@ namespace muhamadiarov
 
     size_t height(ConstIter_t it) const;
     size_t height() const;
-    
+
     size_t size() const noexcept;
     bool empty() const noexcept;
 
@@ -93,7 +93,7 @@ namespace muhamadiarov
 
     BSIterator& operator++();
     BSIterator operator++(int);
-    
+
     BSIterator& operator--();
     BSIterator operator--(int);
 
@@ -121,7 +121,7 @@ namespace muhamadiarov
 
     BSConstIterator& operator++();
     BSConstIterator operator++(int);
-    
+
     BSConstIterator& operator--();
     BSConstIterator operator--(int);
 
@@ -226,7 +226,7 @@ muh::BSTree< Key, Value, Compare >& muh::BSTree< Key, Value, Compare >::operator
     root_ = other.root_;
     size_ = other.size_;
     comp_ = std::move(other.comp_);
-    other.root_ = nullptr; 
+    other.root_ = nullptr;
     other.size_ = 0;
   }
   return *this;
@@ -245,7 +245,7 @@ void muh::BSTree< Key, Value, Compare >::push(const Key& k, const Value& v)
 {
   TreeNode<Key, Value>* parent = nullptr;
   TreeNode<Key, Value>* current = root_->left_;
-  
+
   while (current)
   {
     parent = current;
@@ -256,16 +256,16 @@ void muh::BSTree< Key, Value, Compare >::push(const Key& k, const Value& v)
     else if (comp_(current->val_.first, k))
     {
       current = current->right_;
-    } 
+    }
     else
     {
       current->val_.second = v;
       return;
     }
   }
-  
+
   TreeNode<Key, Value>* newNode = new TreeNode<Key, Value>(k, v, parent);
-  
+
   if (!parent)
   {
     root_->left_ = newNode;
@@ -311,7 +311,7 @@ void muh::BSTree< Key, Value, Compare >::drop(Key k)
   {
     throw std::out_of_range("Key not found");
   }
-  
+
   if (node->left_ && node->right_)
   {
     TreeNode<Key, Value>* succ = getMinimum(node->right_);
@@ -319,14 +319,14 @@ void muh::BSTree< Key, Value, Compare >::drop(Key k)
     node->val_.second = std::move(succ->val_.second);
     node = succ;
   }
-  
+
   TreeNode<Key, Value>* child = (node->left_) ? node->left_ : node->right_;
-  
+
   if (child)
   {
     child->parent_ = node->parent_;
   }
-  
+
   if (!node->parent_)
   {
     root_->left_ = child;
@@ -339,7 +339,7 @@ void muh::BSTree< Key, Value, Compare >::drop(Key k)
   {
     node->parent_->right_ = child;
   }
-  
+
   delete node;
   --size_;
 }
@@ -525,11 +525,11 @@ void muh::BSTree<Key, Value, Compare>::copyTree(
     source->val_.second,
     parent
   );
-  
+
   if (!parent)
   {
     root_->left_ = newNode;
-  } 
+  }
   else if (comp_(source->val_.first, parent->val_.first))
   {
     parent->left_ = newNode;
@@ -538,7 +538,7 @@ void muh::BSTree<Key, Value, Compare>::copyTree(
   {
     parent->right_ = newNode;
   }
-  
+
   copyTree(source->left_, newNode);
   copyTree(source->right_, newNode);
   ++size_;
