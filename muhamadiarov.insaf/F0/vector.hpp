@@ -10,7 +10,7 @@ namespace muhamadiarov
   public:
     Vector();
     Vector(const Vector& other);
-    Vector(size_t capacity);
+    explicit Vector(size_t capacity);
     Vector(Vector&& other) noexcept;
     
     Vector& operator=(const Vector& other);
@@ -80,5 +80,55 @@ muh::Vector< T >::Vector(Vector&& other) noexcept:
   other.data_ = nullptr;
   other.size_ = 0;
   other.capacity_ = 0;
+}
+
+template < class T >
+muh::Vector< T >& muh::Vector< T >::operator=(const Vector& other)
+{
+  if (this != &other)
+  {
+    Vector< T > copy(other);
+    clear();
+    std::swap(data_, copy.data_);
+    std::swap(size_, copy.size_);
+    std::swap(capacity_, copy.capacity_);
+  }
+  return *this;
+}
+
+template < class T >
+muh::Vector< T >& muh::Vector< T >::operator=(Vector&& other) noexcept
+{
+  if (this != &other)
+  {
+    clear();
+    delete[] data_;
+    data_ = other.data_;
+    size_ = other.size_;
+    capacity_ = other.capacity_;
+    other.data_ = nullptr;
+    other.size_ = 0;
+    other.capacity_ = 0;
+  }
+  return *this;
+}
+
+template < class T >
+T& muh::Vector< T >::operator[](size_t id) noexcept
+{
+  return data_[id];
+}
+
+template < class T >
+const T& muh::Vector< T >::operator[](size_t id) const noexcept
+{
+  return data_[id];
+}
+
+template < class T >
+muh::Vector< T >::~Vector()
+{
+  clear();
+  delete[] data_;
 }
 #endif
