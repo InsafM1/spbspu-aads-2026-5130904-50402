@@ -304,4 +304,22 @@ void muh::Vector< T >::clear() noexcept
   }
   size_ = 0;
 }
+
+template < class T >
+bool muh::Vector< T >::isEmpty() const noexcept
+{
+  return size_ == 0;
+}
+
+template < class T >
+size_t muh::Vector< T >::size() const noexcept
+{
+  return size_;
+}
+
+template < class T >
+size_t muh::Vector< T >::capacity() const noexcept
+{
+  return capacity_;
+}
 #endif
