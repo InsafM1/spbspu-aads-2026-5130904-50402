@@ -1,5 +1,6 @@
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
+#include <iostream>
 
 namespace muhamadiarov
 {
@@ -42,4 +43,42 @@ namespace muhamadiarov
   };
 }
 
+namespace muh = muhamadiarov;
+
+template < class T >
+muh::Vector< T >::Vector():
+  data_(nullptr),
+  size_(0),
+  capacity_(0)
+{}
+
+template < class T >
+muh::Vector< T >::Vector(const Vector& other):
+  data_(new T[other.capacity_]),
+  size_(other.size_),
+  capacity_(other.capacity_)
+{
+  for (size_t i = 0; i < other.size_; ++i)
+  {
+    data_[i] = other[i];
+  }
+}
+
+template < class T >
+muh::Vector< T >::Vector(size_t capacity):
+  data_(new T[capacity]),
+  size_(0),
+  capacity_(capacity)
+{}
+
+template < class T >
+muh::Vector< T >::Vector(Vector&& other) noexcept:
+  data_(other.data_),
+  size_(other.size_),
+  capacity_(other.capacity_)
+{
+  other.data_ = nullptr;
+  other.size_ = 0;
+  other.capacity_ = 0;
+}
 #endif
