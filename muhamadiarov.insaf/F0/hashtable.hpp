@@ -70,6 +70,52 @@ namespace muhamadiarov
     friend class RTIter<Key, Value, Hash, Equal>;
     friend class RTCIter<Key, Value, Hash, Equal>;
   };
+
+  template < class Key, class Value, class Hash, class Equal >
+  class RTIter
+  {
+  public:
+    RTIter();
+    RTIter(Vector< Node< Key, Value > >* data, size_t id);
+    
+    RTIter& operator++();
+    RTIter& operator++(int);
+    
+    RTIter& operator--();
+    RTIter& operator--(int);
+
+    bool operator==(const RTIter& other) const noexcept;
+    bool operator!=(const RTIter& other) const noexcept;
+
+    std::pair< Key, Value >& operator*() noexcept;
+    std::pair< Key, Value >& operator->() noexcept;
+  private:
+    Vector< Node< Key, Value > >* data_;
+    size_t index_;
+  };
+
+  template < class Key, class Value, class Hash, class Equal >
+  class RTCIter
+  {
+  public:
+    RTCIter();
+    RTCIter(const Vector< Node< Key, Value > >* data, size_t id);
+    
+    RTCIter& operator++();
+    RTCIter& operator++(int);
+    
+    RTCIter& operator--();
+    RTCIter& operator--(int);
+
+    bool operator==(const RTCIter& other) const noexcept;
+    bool operator!=(const RTCIter& other) const noexcept;
+
+    const std::pair< Key, Value >& operator*() const noexcept;
+    const std::pair< Key, Value >& operator->() const noexcept;
+  private:
+    const Vector< Node< Key, Value > >* data_;
+    size_t index_;
+  };
 }
 
 #endif
