@@ -173,7 +173,7 @@ muh::RobinTable< K, V, H, E >::RobinTable(const RobinTable& other):
   equal_(other.equal_),
   capacity_(other.capacity_),
   size_(other.size_),
-  maxLoad_(other.size_)
+  maxLoad_(other.maxLoad_)
 {
   data_.reserve(capacity_);
   for (size_t i = 0; i < capacity_; ++i)
@@ -196,7 +196,7 @@ muh::RobinTable< K, V, H, E >::RobinTable(RobinTable&& other) noexcept:
   equal_(std::move(other.equal_)),
   capacity_(other.capacity_),
   size_(other.size_),
-  maxLoad_(other.size_)
+  maxLoad_(other.maxLoad_)
 {
   other.capacity_ = 0;
   other.size_ = 0;
@@ -231,4 +231,46 @@ muh::RobinTable< K, V, H, E >& muh::RobinTable< K, V, H, E >::operator=(
 template < class K, class V, class H, class E >
 muh::RobinTable< K, V, H, E >::~RobinTable()
 {}
+
+template < class K, class V, class H, class E >
+void muh::RobinTable< K, V, H, E >::add(K k, V v)
+{
+  if (capacity_ == 0 || (size_ + 1) > capacity_ * maxLoad_)
+  {
+    rehash(capacity_ == 0 ? 8 : capacity_ * 2);
+  }
+  Node< K, V > incoming;
+  incoming.value_ = {std::move(k), std::move(v)};
+  incoming.psl_ = 0;
+  incoming.occupied_ = true;
+
+  size_t slot = hasher_(k) % capacity_;
+  for (size_t i = 0; i < capacity_; ++i)
+  {
+    Node< K, V >& curr = data_[slot];
+    if (!curr.occupied_)
+    {
+      curr = std::move(incoming);
+      ++size_;
+      return;
+    }
+    if (equal_(curr.value_.first, k))
+    {
+      curr.value_.second = std::move(v);
+      return;
+    }
+    if (curr.psl_ < incoming.psl_)
+    {
+      incoming.swap(curr);
+    }
+    ++incoming.psl_;
+    slot = (slot + 1) % capacity_;
+  }
+}
+/*
+void drop(Key k);
+Value &get(Key k);
+const Value &get(Key k) const;
+bool has(Key k) const noexcept;
+void rehash(size_t slots);*/
 #endif

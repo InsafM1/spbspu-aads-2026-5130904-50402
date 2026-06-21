@@ -231,7 +231,7 @@ void muh::Vector< T >::shiftLeft(size_t id)
 template < class T >
 void muh::Vector< T >::shiftRight(size_t id)
 {
-  if (id >= size)
+  if (id >= size_)
   {
     return;
   }
