@@ -15,13 +15,13 @@ namespace muhamadiarov
     void clear() noexcept;
   };
 
-  template < class Key, class Value, class Hash, class Equal >
+  template < class Key, class Value, class Hash, class Equal = std::equal_to< Key > >
   class RTIter;
 
-  template < class Key, class Value, class Hash, class Equal >
+  template < class Key, class Value, class Hash, class Equal = std::equal_to< Key > >
   class RTCIter;
 
-  template < class Key, class Value, class Hash, class Equal >
+  template < class Key, class Value, class Hash, class Equal = std::equal_to< Key > >
   class RobinTable
   {
   public:
@@ -29,8 +29,7 @@ namespace muhamadiarov
     using ConstIterator = RTCIter<Key, Value, Hash, Equal>;
 
     RobinTable();
-    explicit RobinTable(size_t slots, float max_load = 0.7f);
-    RobinTable(std::initializer_list< std::pair< Key, Value > > il);
+    explicit RobinTable(size_t slots, float maxLoad = 0.7f);
     RobinTable(const RobinTable& other);
     RobinTable(RobinTable&& other) noexcept;
     RobinTable& operator=(const RobinTable& other);
@@ -117,5 +116,119 @@ namespace muhamadiarov
     size_t index_;
   };
 }
+namespace muh = muhamadiarov;
 
+template < class K, class V >
+muh::Node< K, V >::Node():
+  value_(),
+  psl_(0),
+  occupied_(false)
+{}
+
+
+template < class K, class V >
+void muh::Node< K, V >::swap(Node& other) noexcept
+{
+  std::swap(value_, other.value_);
+  std::swap(psl_, other.psl_);
+  std::swap(occupied_, other.occupied_);
+}
+
+template < class K, class V >
+void muh::Node< K, V >::clear() noexcept
+{
+  occupied_ = false;
+  psl_ = 0;
+}
+
+template < class K, class V, class H, class E >
+muh::RobinTable< K, V, H, E >::RobinTable():
+    capacity_(8),
+    size_(0),
+    maxLoad_(0.7f)
+{
+  data_.reserve(capacity_);
+  for (size_t i = 0; i < capacity_; ++i)
+  {
+    data_.pushBack(Node< K, V >());
+  }
+}
+
+template < class K, class V, class H, class E >
+muh::RobinTable< K, V, H, E >::RobinTable(size_t slots, float maxLoad):
+  capacity_(slots),
+  size_(0),
+  maxLoad_(maxLoad)
+{
+  data_.reserve(capacity_);
+  for (size_t i = 0; i < capacity_; ++i)
+  {
+    data_.pushBack(Node< K, V >());
+  }
+}
+
+template < class K, class V, class H, class E >
+muh::RobinTable< K, V, H, E >::RobinTable(const RobinTable& other):
+  hasher_(other.hasher_),
+  equal_(other.equal_),
+  capacity_(other.capacity_),
+  size_(other.size_),
+  maxLoad_(other.size_)
+{
+  data_.reserve(capacity_);
+  for (size_t i = 0; i < capacity_; ++i)
+  {
+    Node< K, V > node;
+    if (other.data_[i].occupied_)
+    {
+      node.value_ = other.data_[i].value_;
+      node.psl_ = other.data_[i].psl_;
+      node.occupied_ = true;
+    }
+    data_.pushBack(std::move(node));
+  }
+}
+
+template < class K, class V, class H, class E >
+muh::RobinTable< K, V, H, E >::RobinTable(RobinTable&& other) noexcept:
+  data_(std::move(other.data_)),
+  hasher_(std::move(other.hasher_)),
+  equal_(std::move(other.equal_)),
+  capacity_(other.capacity_),
+  size_(other.size_),
+  maxLoad_(other.size_)
+{
+  other.capacity_ = 0;
+  other.size_ = 0;
+}
+
+template < class K, class V, class H, class E >
+muh::RobinTable< K, V, H, E >& muh::RobinTable< K, V, H, E >::operator=(
+  const RobinTable& other
+)
+{
+  if (this != &other)
+  {
+    RobinTable copy(other);
+    swap(copy);
+  }
+  return *this;
+}
+
+template < class K, class V, class H, class E >
+muh::RobinTable< K, V, H, E >& muh::RobinTable< K, V, H, E >::operator=(
+  RobinTable&& other
+) noexcept
+{
+  if (this != &other)
+  {
+    RobinTable temp(std::move(other));
+    swap(temp);
+  }
+  return *this;
+}
+
+template < class K, class V, class H, class E >
+muh::RobinTable< K, V, H, E >::~RobinTable()
+{}
 #endif
