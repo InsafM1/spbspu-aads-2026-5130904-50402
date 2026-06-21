@@ -267,8 +267,29 @@ void muh::RobinTable< K, V, H, E >::add(K k, V v)
     slot = (slot + 1) % capacity_;
   }
 }
+
+template < class K, class V, class H, class E >
+void muh::RobinTable< K, V, H, E >::drop(K k)
+{
+  size_t slot = findSlot(k);
+  if (slot == capacity_)
+  {
+    return;
+  }
+  data_[slot].clear();
+  --size_;
+  size_t next = (slot + 1) % capacity_;
+  while (data_[next].occupied_ && data_[next].psl_ > 0)
+  {
+    data_[slot] = std::move(data_[next]);
+    data_[slot].psl_ -= 1;
+    data_[next].clear();
+    slot = next;
+    next = (next + 1) % capacity_;
+  }
+}
+
 /*
-void drop(Key k);
 Value &get(Key k);
 const Value &get(Key k) const;
 bool has(Key k) const noexcept;
