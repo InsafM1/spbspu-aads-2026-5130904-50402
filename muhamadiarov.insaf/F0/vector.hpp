@@ -23,8 +23,12 @@ namespace muhamadiarov
     
     void popBack();
     void pushBack(const T& value);
+    void pushBack(T&& value);
     void popFront();
-    void pushFront(const T& value);
+    void pushFront(const T& value); 
+    void pushFront(T&& value);
+    void insert(size_t id, const T& value);
+    void insert(size_t id, T&& value);
 
     T& at(size_t id);
     const T& at(size_t id) const;
@@ -40,6 +44,8 @@ namespace muhamadiarov
     T* data_;
     size_t size_;
     size_t capacity_;
+    void shiftLeft(size_t id);
+    void shiftRight(size_t id);
   };
 }
 
@@ -130,5 +136,113 @@ muh::Vector< T >::~Vector()
 {
   clear();
   delete[] data_;
+}
+
+template < class T >
+void muh::Vector< T >::popBack()
+{
+  if (size_ == 0)
+  {
+    return;
+  }
+  data_[--size_].~T();
+}
+
+template < class T >
+void muh::Vector< T >::pushBack(const T& value)
+{
+  if (size_ >= capacity_)
+  {
+    reserve(capacity_ == 0 ? 1 : capacity_ * 2);
+  }
+  data_[size_++] = value;
+}
+
+template < class T >
+void muh::Vector< T >::pushBack(T&& value)
+{
+  if (size_ >= capacity_)
+  {
+    reserve(capacity_ == 0 ? 1 : capacity_ * 2);
+  }
+  data_[size_++] = std::move(value);
+}
+
+template < class T >
+void muh::Vector< T >::popFront()
+{
+  if (size_ == 0)
+  {
+    return;
+  }
+  shiftLeft(0);
+}
+
+template < class T >
+void muh::Vector< T >::pushFront(const T& value)
+{
+  shiftRight(0);
+  data_[0] = value;
+}
+
+template < class T >
+void muh::Vector< T >::pushFront(T&& value)
+{
+  shiftRight(0);
+  data_[0] = std::move(value);
+}
+
+template < class T >
+void muh::Vector< T >::insert(size_t id, const T& value)
+{
+  if (id > size_)
+  {
+    throw std::out_of_range("Vector::insert: index out of range");
+  }
+  shiftRight(id);
+  data_[id] = value;
+}
+
+template < class T >
+void muh::Vector< T >::insert(size_t id, T&& value)
+{
+  if (id > size_)
+  {
+    throw std::out_of_range("Vector::insert: index out of range");
+  }
+  shiftRight(id);
+  data_[id] = std::move(value);
+}
+
+template < class T >
+void muh::Vector< T >::shiftLeft(size_t id)
+{
+  if (id >= size_)
+  {
+    return;
+  }
+  for (size_t i = id; i < size_ - 1; ++i)
+  {
+    data_[i] = std::move(data_[i + 1]);
+  }
+  --size_;
+}
+
+template < class T >
+void muh::Vector< T >::shiftRight(size_t id)
+{
+  if (id >= size)
+  {
+    return;
+  }
+  if (size_ >= capacity_)
+  {
+    reserve(capacity_ == 0 ? 1 : capacity_ * 2);
+  }
+  for (size_t i = size_; i > id; --i)
+  {
+    data_[i] = std::move(data_[i - 1]);
+  }
+  ++size_;
 }
 #endif
