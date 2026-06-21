@@ -245,4 +245,24 @@ void muh::Vector< T >::shiftRight(size_t id)
   }
   ++size_;
 }
+
+template < class T >
+T& muh::Vector< T >::at(size_t id)
+{
+  if (id >= size_)
+  {
+    throw std::out_of_range("Vector::at: index out of range");
+  }
+  return data_[id];
+}
+
+template < class T >
+const T& muh::Vector< T >::at(size_t id) const
+{
+  if (id >= size_)
+  {
+    throw std::out_of_range("Vector::at: index out of range");
+  }
+  return data_[id];
+}
 #endif
