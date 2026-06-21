@@ -39,8 +39,8 @@ namespace muhamadiarov
     
     void add(Key k, Value v);
     void drop(Key k);
-    Value &get(Key k);
-    const Value &get(Key k) const;
+    Value& get(Key k);
+    const Value& get(Key k) const;
     bool has(Key k) const noexcept;
     void rehash(size_t slots);
 
@@ -66,6 +66,7 @@ namespace muhamadiarov
     size_t size_;
     float maxLoad_;
 
+    size_t findSlot(const Key& k) const;    
     friend class RTIter<Key, Value, Hash, Equal>;
     friend class RTCIter<Key, Value, Hash, Equal>;
   };
@@ -289,9 +290,73 @@ void muh::RobinTable< K, V, H, E >::drop(K k)
   }
 }
 
-/*
-Value &get(Key k);
-const Value &get(Key k) const;
-bool has(Key k) const noexcept;
-void rehash(size_t slots);*/
+template < class K, class V, class H, class E >
+V& muh::RobinTable< K, V, H, E >::get(K k)
+{
+  size_t slot = findSlot(k);
+  if (slot == capacity_)
+  {
+    throw std::out_of_range("RobinTable::get: key out of range");
+  }
+  return data_[slot].value_.second;
+}
+
+template < class K, class V, class H, class E >
+const V& muh::RobinTable< K, V, H, E >::get(K k) const
+{
+  size_t slot = findSlot(k);
+  if (slot == capacity_)
+  {
+    throw std::out_of_range("RobinTable::get: key out of range");
+  }
+  return data_[slot].value_.second;
+}
+
+template < class K, class V, class H, class E >
+bool muh::RobinTable< K, V, H, E >::has(K k) const noexcept
+{
+  return findSLot(k) != capacity_;
+}
+
+template < class K, class V, class H, class E >
+void muh::RobinTable< K, V, H, E >::rehash(size_t slots)
+{
+  if (slots <= capacity_)
+  {
+    return;
+  }
+  RobinTable fresh(slots, maxLoad_);
+  for (size_t i = 0; i < capacity_; ++i)
+  {
+    if (data_[i].occupied_)
+    {
+      fresh.add(data_[i].value_.first, data_[i].value_.second);
+    }
+  }
+  swap(fresh);
+}
+
+template < class K, class V, class H, class E >
+size_t muh::RobinTable< K, V, H, E >::findSlot(const K& k) const
+{
+  if (capacity_ == 0)
+  {
+    return capacity_;
+  }
+  size_t slot = hasher_(k) % capacity_;
+  for (size_t psl = 0; psl < capacity_; ++psl)
+  {
+    const Node< K, V >& cur = data_[slot];
+    if (!cur.occupied_ || cur.psl_ < psl)
+    {
+      return capacity_;
+    }
+    if (equal_(cur.value_.first, k))
+    {
+      return slot;
+    }
+    slot = (slot + 1) % capacity_;
+  }
+  return capacity_;
+}
 #endif
