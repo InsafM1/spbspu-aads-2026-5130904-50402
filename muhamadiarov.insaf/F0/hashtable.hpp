@@ -25,9 +25,9 @@ namespace muhamadiarov
   class RobinTable
   {
   public:
-    using Iterator = RTIter<Key, Value, Hash, Equal>;
-    using ConstIterator = RTCIter<Key, Value, Hash, Equal>;
-
+    using Iterator = RTIter < Key, Value, Hash, Equal >;
+    using ConstIterator = RTCIter< Key, Value, Hash, Equal >;
+    
     RobinTable();
     explicit RobinTable(size_t slots, float maxLoad = 0.7f);
     RobinTable(const RobinTable& other);
@@ -359,4 +359,70 @@ size_t muh::RobinTable< K, V, H, E >::findSlot(const K& k) const
   }
   return capacity_;
 }
+
+template < class K, class V, class H, class E >
+void muh::RobinTable< K, V, H, E >::clear() noexcept
+{
+  if (size_ == 0)
+  {
+    return;
+  }
+  for (size_t i = 0; i < capacity_; ++i)
+  {
+    data_[i].clear();
+  }
+  size_ = 0;
+}
+
+template < class K, class V, class H, class E >
+size_t muh::RobinTable< K, V, H, E >::size() const noexcept
+{
+  return size_;
+}
+
+template < class K, class V, class H, class E >
+bool muh::RobinTable< K, V, H, E >::empty() const noexcept
+{
+  return size_ == 0; 
+}
+
+template < class K, class V, class H, class E >
+float muh::RobinTable< K, V, H, E >::maxLoadFactor() const noexcept
+{
+  return maxLoad_;
+}
+
+template < class K, class V, class H, class E >
+muh::RTIter< K, V, H, E > muh::RobinTable< K, V, H, E >::begin() noexcept
+{
+  return RTIter< K, V, H, E >(&data_, 0);
+}
+
+template < class K, class V, class H, class E >
+muh::RTIter< K, V, H, E > muh::RobinTable< K, V, H, E >::end() noexcept
+{
+  return RTIter< K, V, H, E >(&data_, size_);
+}
+
+template < class K, class V, class H, class E >
+muh::RTCIter< K, V, H, E > muh::RobinTable< K, V, H, E >::begin() const noexcept
+{
+  return RTCIter< K, V, H, E >(&data_, 0);
+}
+template < class K, class V, class H, class E >
+muh::RTCIter< K, V, H, E > muh::RobinTable< K, V, H, E >::end() const noexcept
+{
+  return RTCIter< K, V, H, E >(&data_, size_);
+}
+template< class K, class V, class H, class E >
+muh::RTCIter< K, V, H, E > muh::RobinTable< K, V, H, E >::cbegin() const noexcept
+{
+  return RTCIter< K, V, H, E >(&data_, 0);
+}
+
+template< class K, class V, class H, class E >
+muh::RTCIter< K, V, H, E > muh::RobinTable< K, V, H, E >::cend() const noexcept
+{
+  return RTCIter< K, V, H, E >(&data_, size_);
+};
 #endif
