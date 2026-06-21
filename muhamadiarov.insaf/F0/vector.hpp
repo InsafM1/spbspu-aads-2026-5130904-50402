@@ -33,7 +33,7 @@ namespace muhamadiarov
     T& at(size_t id);
     const T& at(size_t id) const;
 
-    void reserve(size_t capacity);
+    void reserve(size_t newCapacity);
     void erase(size_t id) noexcept;
     void clear() noexcept;
 
@@ -264,5 +264,44 @@ const T& muh::Vector< T >::at(size_t id) const
     throw std::out_of_range("Vector::at: index out of range");
   }
   return data_[id];
+}
+
+template < class T >
+void muh::Vector< T >::reserve(size_t newCapacity)
+{
+  if (newCapacity <= capacity_)
+  {
+    return;
+  }
+  T* newData = new T[newCapacity];
+  for (size_t i = 0; i < size_; ++i)
+  {
+    newData[i] = std::move(data_[i]);
+  }
+
+  clear();
+  delete [] data_;
+  data_ = newData;
+  capacity_ = newCapacity;
+}
+
+template < class T >
+void muh::Vector< T >::erase(size_t id) noexcept
+{
+  if (id >= size_)
+  {
+    return;
+  }
+  shiftLeft(id);
+}
+
+template < class T >
+void muh::Vector< T >::clear() noexcept
+{
+  for (size_t i = 0; i < size_; ++i)
+  {
+    data_[i].~T();
+  }
+  size_ = 0;
 }
 #endif
