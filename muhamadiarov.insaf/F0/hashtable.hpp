@@ -1,11 +1,12 @@
 #ifndef HASHTABLE_HPP
 #define HASHTABLE_HPP
 #include "vector.hpp"
+#include <hasher.hpp>
 
 namespace muhamadiarov
 {
   template < class Key, class Value >
-  class Node
+  struct Node
   {
     std::pair< Key, Value > value_;
     size_t psl_;
@@ -15,13 +16,13 @@ namespace muhamadiarov
     void clear() noexcept;
   };
 
-  template < class Key, class Value, class Hash, class Equal = std::equal_to< Key > >
+  template < class Key, class Value, class Hash, class Equal >
   class RTIter;
 
-  template < class Key, class Value, class Hash, class Equal = std::equal_to< Key > >
+  template < class Key, class Value, class Hash, class Equal >
   class RTCIter;
 
-  template < class Key, class Value, class Hash, class Equal = std::equal_to< Key > >
+  template < class Key, class Value, class Hash = SipHash< Key >, class Equal = std::equal_to< Key > >
   class RobinTable
   {
   public:
@@ -88,7 +89,7 @@ namespace muhamadiarov
     bool operator!=(const RTIter& other) const noexcept;
 
     std::pair< Key, Value >& operator*() noexcept;
-    std::pair< Key, Value >& operator->() noexcept;
+    std::pair< Key, Value >* operator->() noexcept;
   private:
     Vector< Node< Key, Value > >* data_;
     size_t index_;
@@ -114,7 +115,7 @@ namespace muhamadiarov
     bool operator!=(const RTCIter& other) const noexcept;
 
     const std::pair< Key, Value >& operator*() const noexcept;
-    const std::pair< Key, Value >& operator->() const noexcept;
+    const std::pair< Key, Value >* operator->() const noexcept;
   private:
     const Vector< Node< Key, Value > >* data_;
     size_t index_;
@@ -251,7 +252,7 @@ void muh::RobinTable< K, V, H, E >::add(K k, V v)
   incoming.psl_ = 0;
   incoming.occupied_ = true;
 
-  size_t slot = hasher_(k) % capacity_;
+  size_t slot = hasher_(incoming.value_.first) % capacity_;
   for (size_t i = 0; i < capacity_; ++i)
   {
     Node< K, V >& curr = data_[slot];
@@ -321,7 +322,7 @@ const V& muh::RobinTable< K, V, H, E >::get(K k) const
 template < class K, class V, class H, class E >
 bool muh::RobinTable< K, V, H, E >::has(K k) const noexcept
 {
-  return findSLot(k) != capacity_;
+  return findSlot(k) != capacity_;
 }
 
 template < class K, class V, class H, class E >
@@ -399,6 +400,17 @@ float muh::RobinTable< K, V, H, E >::maxLoadFactor() const noexcept
 }
 
 template < class K, class V, class H, class E >
+void muh::RobinTable< K, V, H, E >::swap(RobinTable& other) noexcept
+{
+  std::swap(data_, other.data_);
+  std::swap(hasher_, other.hasher_);
+  std::swap(equal_, other.equal_);
+  std::swap(capacity_, other.capacity_);
+  std::swap(size_, other.size_);
+  std::swap(maxLoad_, other.maxLoad_);
+}
+
+template < class K, class V, class H, class E >
 muh::RTIter< K, V, H, E > muh::RobinTable< K, V, H, E >::begin() noexcept
 {
   return RTIter< K, V, H, E >(&data_, 0);
@@ -407,7 +419,7 @@ muh::RTIter< K, V, H, E > muh::RobinTable< K, V, H, E >::begin() noexcept
 template < class K, class V, class H, class E >
 muh::RTIter< K, V, H, E > muh::RobinTable< K, V, H, E >::end() noexcept
 {
-  return RTIter< K, V, H, E >(&data_, size_);
+  return RTIter< K, V, H, E >(&data_, capacity_);
 }
 
 template < class K, class V, class H, class E >
@@ -418,7 +430,7 @@ muh::RTCIter< K, V, H, E > muh::RobinTable< K, V, H, E >::begin() const noexcept
 template < class K, class V, class H, class E >
 muh::RTCIter< K, V, H, E > muh::RobinTable< K, V, H, E >::end() const noexcept
 {
-  return RTCIter< K, V, H, E >(&data_, size_);
+  return RTCIter< K, V, H, E >(&data_, capacity_);
 }
 template< class K, class V, class H, class E >
 muh::RTCIter< K, V, H, E > muh::RobinTable< K, V, H, E >::cbegin() const noexcept
@@ -429,7 +441,7 @@ muh::RTCIter< K, V, H, E > muh::RobinTable< K, V, H, E >::cbegin() const noexcep
 template< class K, class V, class H, class E >
 muh::RTCIter< K, V, H, E > muh::RobinTable< K, V, H, E >::cend() const noexcept
 {
-  return RTCIter< K, V, H, E >(&data_, size_);
+  return RTCIter< K, V, H, E >(&data_, capacity_);
 };
 
 template< class K, class V, class H, class E >
@@ -442,37 +454,32 @@ template< class K, class V, class H, class E >
 muh::RTIter< K, V, H, E >::RTIter(Vector< Node< K, V > >* data, size_t id):
   data_(data),
   index_(id)
-{}
+{
+  next();
+}
 
 template< class K, class V, class H, class E >
 void muh::RTIter< K, V, H, E >::next()
 { 
-  while (index_ + 1 < data_->capacity())
+  while (data_ && index_ < data_->capacity() && !(*data_)[index_].occupied_)
   {
     ++index_;
-    if ((*data_)[index_].occupied_)
-    {
-      return;
-    }
   }
 }
 
 template < class K, class V, class H, class E >
 void muh::RTIter< K, V, H, E >::prev()
 {
-  while (index_ > 0)
+  while (data_ && index_ > 0 && !(*data_)[index_].occupied_)
   {
     --index_;
-    if ((*data_)[index_].occupied_)
-    {
-      return;
-    }
   }
 }
 
 template < class K, class V, class H, class E >
 muh::RTIter< K, V, H, E >& muh::RTIter< K, V, H, E >::operator++()
 {
+  ++index_;
   next();
   return *this;
 }
@@ -481,13 +488,14 @@ template < class K, class V, class H, class E >
 muh::RTIter< K, V, H, E >& muh::RTIter< K, V, H, E >::operator++(int)
 {
   RTIter< K, V, H, E > temp = *this;
-  next();
+  ++(*this);
   return temp;
 }
 
 template < class K, class V, class H, class E >
 muh::RTIter< K, V, H, E >& muh::RTIter< K, V, H, E >::operator--()
 {
+  --index_;
   prev();
   return *this;
 }
@@ -496,7 +504,7 @@ template < class K, class V, class H, class E >
 muh::RTIter< K, V, H, E >& muh::RTIter< K, V, H, E >::operator--(int)
 {
   RTIter< K, V, H, E > temp = *this;
-  prev();
+  --(*this);
   return *this;
 }
 
@@ -515,11 +523,11 @@ bool muh::RTIter< K, V, H, E >::operator!=(const RTIter& other) const noexcept
 template < class K, class V, class H, class E >
 std::pair< K, V >& muh::RTIter< K, V, H, E >::operator*() noexcept
 {
-  return &(*data_)[index_].value_;
+  return (*data_)[index_].value_;
 }
 
 template < class K, class V, class H, class E >
-std::pair< K, V >& muh::RTIter< K, V, H, E >::operator->() noexcept
+std::pair< K, V >* muh::RTIter< K, V, H, E >::operator->() noexcept
 {
   return &(*data_)[index_].value_;
 }
@@ -534,37 +542,32 @@ template< class K, class V, class H, class E >
 muh::RTCIter< K, V, H, E >::RTCIter(const Vector< Node< K, V > >* data, size_t id):
   data_(data),
   index_(id)
-{}
+{
+  next();
+}
 
 template< class K, class V, class H, class E >
 void muh::RTCIter< K, V, H, E >::next()
 { 
-  while (index_ + 1 < data_->capacity())
+  while (data_ && index_ < data_->capacity() && !(*data_)[index_].occupied_)
   {
     ++index_;
-    if ((*data_)[index_].occupied_)
-    {
-      return;
-    }
   }
 }
 
 template < class K, class V, class H, class E >
 void muh::RTCIter< K, V, H, E >::prev()
 {
-  while (index_ > 0)
+  while (data_ && index_ > 0 && !(*data_)[index_].occupied_)
   {
     --index_;
-    if ((*data_)[index_].occupied_)
-    {
-      return;
-    }
   }
 }
 
 template < class K, class V, class H, class E >
 muh::RTCIter< K, V, H, E >& muh::RTCIter< K, V, H, E >::operator++()
 {
+  ++index_;
   next();
   return *this;
 }
@@ -573,13 +576,14 @@ template < class K, class V, class H, class E >
 muh::RTCIter< K, V, H, E >& muh::RTCIter< K, V, H, E >::operator++(int)
 {
   RTCIter< K, V, H, E > temp = *this;
-  next();
+  ++(*this);
   return temp;
 }
 
 template < class K, class V, class H, class E >
 muh::RTCIter< K, V, H, E >& muh::RTCIter< K, V, H, E >::operator--()
 {
+  --index_;
   prev();
   return *this;
 }
@@ -588,7 +592,7 @@ template < class K, class V, class H, class E >
 muh::RTCIter< K, V, H, E >& muh::RTCIter< K, V, H, E >::operator--(int)
 {
   RTCIter< K, V, H, E > temp = *this;
-  prev();
+  --(*this);
   return *this;
 }
 
@@ -607,11 +611,11 @@ bool muh::RTCIter< K, V, H, E >::operator!=(const RTCIter& other) const noexcept
 template < class K, class V, class H, class E >
 const std::pair< K, V >& muh::RTCIter< K, V, H, E >::operator*() const noexcept
 {
-  return &(*data_)[index_].value_;
+  return (*data_)[index_].value_;
 }
 
 template < class K, class V, class H, class E >
-const std::pair< K, V >& muh::RTCIter< K, V, H, E >::operator->() const noexcept
+const std::pair< K, V >* muh::RTCIter< K, V, H, E >::operator->() const noexcept
 {
   return &(*data_)[index_].value_;
 }
