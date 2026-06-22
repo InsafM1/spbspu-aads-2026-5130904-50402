@@ -145,7 +145,8 @@ void muh::Vector< T >::popBack()
   {
     return;
   }
-  data_[--size_].~T();
+  --size_;
+  data_[size_].~T();
 }
 
 template < class T >
@@ -155,7 +156,8 @@ void muh::Vector< T >::pushBack(const T& value)
   {
     reserve(capacity_ == 0 ? 1 : capacity_ * 2);
   }
-  data_[size_++] = value;
+  data_[size_] = value;
+  ++size_; 
 }
 
 template < class T >
@@ -165,7 +167,8 @@ void muh::Vector< T >::pushBack(T&& value)
   {
     reserve(capacity_ == 0 ? 1 : capacity_ * 2);
   }
-  data_[size_++] = std::move(value);
+  data_[size_] = std::move(value);
+  ++size_;
 }
 
 template < class T >
@@ -231,7 +234,7 @@ void muh::Vector< T >::shiftLeft(size_t id)
 template < class T >
 void muh::Vector< T >::shiftRight(size_t id)
 {
-  if (id >= size_)
+  if (id > size_)
   {
     return;
   }
@@ -243,6 +246,7 @@ void muh::Vector< T >::shiftRight(size_t id)
   {
     data_[i] = std::move(data_[i - 1]);
   }
+  
   ++size_;
 }
 
@@ -277,9 +281,8 @@ void muh::Vector< T >::reserve(size_t newCapacity)
   for (size_t i = 0; i < size_; ++i)
   {
     newData[i] = std::move(data_[i]);
+    data_[i].~T();
   }
-
-  clear();
   delete [] data_;
   data_ = newData;
   capacity_ = newCapacity;
