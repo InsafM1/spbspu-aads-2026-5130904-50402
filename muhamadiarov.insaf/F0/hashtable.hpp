@@ -6,13 +6,13 @@
 namespace muhamadiarov
 {
   template < class Key, class Value >
-  struct Node
+  struct Slot
   {
     std::pair< Key, Value > value_;
     size_t psl_;
     bool occupied_;
-    Node();
-    void swap(Node& other) noexcept;
+    Slot();
+    void swap(Slot& other) noexcept;
     void clear() noexcept;
   };
 
@@ -60,7 +60,7 @@ namespace muhamadiarov
 
     void swap(RobinTable& other) noexcept;
   private:
-    Vector< Node< Key, Value > > data_;
+    Vector< Slot< Key, Value > > data_;
     Hash hasher_;
     Equal equal_;
     size_t capacity_;
@@ -77,7 +77,7 @@ namespace muhamadiarov
   {
   public:
     RTIter();
-    RTIter(Vector< Node< Key, Value > >* data, size_t id);
+    RTIter(Vector< Slot< Key, Value > >* data, size_t id);
     
     RTIter& operator++();
     RTIter& operator++(int);
@@ -91,7 +91,7 @@ namespace muhamadiarov
     std::pair< Key, Value >& operator*() noexcept;
     std::pair< Key, Value >* operator->() noexcept;
   private:
-    Vector< Node< Key, Value > >* data_;
+    Vector< Slot< Key, Value > >* data_;
     size_t index_;
 
     void next();
@@ -103,7 +103,7 @@ namespace muhamadiarov
   {
   public:
     RTCIter();
-    RTCIter(const Vector< Node< Key, Value > >* data, size_t id);
+    RTCIter(const Vector< Slot< Key, Value > >* data, size_t id);
     
     RTCIter& operator++();
     RTCIter& operator++(int);
@@ -117,7 +117,7 @@ namespace muhamadiarov
     const std::pair< Key, Value >& operator*() const noexcept;
     const std::pair< Key, Value >* operator->() const noexcept;
   private:
-    const Vector< Node< Key, Value > >* data_;
+    const Vector< Slot< Key, Value > >* data_;
     size_t index_;
 
     void next();
@@ -127,7 +127,7 @@ namespace muhamadiarov
 namespace muh = muhamadiarov;
 
 template < class K, class V >
-muh::Node< K, V >::Node():
+muh::Slot< K, V >::Slot():
   value_(),
   psl_(0),
   occupied_(false)
@@ -135,7 +135,7 @@ muh::Node< K, V >::Node():
 
 
 template < class K, class V >
-void muh::Node< K, V >::swap(Node& other) noexcept
+void muh::Slot< K, V >::swap(Slot& other) noexcept
 {
   std::swap(value_, other.value_);
   std::swap(psl_, other.psl_);
@@ -143,7 +143,7 @@ void muh::Node< K, V >::swap(Node& other) noexcept
 }
 
 template < class K, class V >
-void muh::Node< K, V >::clear() noexcept
+void muh::Slot< K, V >::clear() noexcept
 {
   occupied_ = false;
   psl_ = 0;
@@ -158,7 +158,7 @@ muh::RobinTable< K, V, H, E >::RobinTable():
   data_.reserve(capacity_);
   for (size_t i = 0; i < capacity_; ++i)
   {
-    data_.pushBack(Node< K, V >());
+    data_.pushBack(Slot< K, V >());
   }
 }
 
@@ -171,7 +171,7 @@ muh::RobinTable< K, V, H, E >::RobinTable(size_t slots, float maxLoad):
   data_.reserve(capacity_);
   for (size_t i = 0; i < capacity_; ++i)
   {
-    data_.pushBack(Node< K, V >());
+    data_.pushBack(Slot< K, V >());
   }
 }
 
@@ -186,7 +186,7 @@ muh::RobinTable< K, V, H, E >::RobinTable(const RobinTable& other):
   data_.reserve(capacity_);
   for (size_t i = 0; i < capacity_; ++i)
   {
-    Node< K, V > node;
+    Slot< K, V > node;
     if (other.data_[i].occupied_)
     {
       node.value_ = other.data_[i].value_;
@@ -247,7 +247,7 @@ void muh::RobinTable< K, V, H, E >::add(K k, V v)
   {
     rehash(capacity_ == 0 ? 8 : capacity_ * 2);
   }
-  Node< K, V > incoming;
+  Slot< K, V > incoming;
   incoming.value_ = {std::move(k), std::move(v)};
   incoming.psl_ = 0;
   incoming.occupied_ = true;
@@ -255,7 +255,7 @@ void muh::RobinTable< K, V, H, E >::add(K k, V v)
   size_t slot = hasher_(incoming.value_.first) % capacity_;
   for (size_t i = 0; i < capacity_; ++i)
   {
-    Node< K, V >& curr = data_[slot];
+    Slot< K, V >& curr = data_[slot];
     if (!curr.occupied_)
     {
       curr = std::move(incoming);
@@ -353,7 +353,7 @@ size_t muh::RobinTable< K, V, H, E >::findSlot(const K& k) const
   size_t slot = hasher_(k) % capacity_;
   for (size_t psl = 0; psl < capacity_; ++psl)
   {
-    const Node< K, V >& cur = data_[slot];
+    const Slot< K, V >& cur = data_[slot];
     if (!cur.occupied_ || cur.psl_ < psl)
     {
       return capacity_;
@@ -451,7 +451,7 @@ muh::RTIter< K, V, H, E >::RTIter():
 {}
 
 template< class K, class V, class H, class E >
-muh::RTIter< K, V, H, E >::RTIter(Vector< Node< K, V > >* data, size_t id):
+muh::RTIter< K, V, H, E >::RTIter(Vector< Slot< K, V > >* data, size_t id):
   data_(data),
   index_(id)
 {
@@ -539,7 +539,7 @@ muh::RTCIter< K, V, H, E >::RTCIter():
 {}
 
 template< class K, class V, class H, class E >
-muh::RTCIter< K, V, H, E >::RTCIter(const Vector< Node< K, V > >* data, size_t id):
+muh::RTCIter< K, V, H, E >::RTCIter(const Vector< Slot< K, V > >* data, size_t id):
   data_(data),
   index_(id)
 {
