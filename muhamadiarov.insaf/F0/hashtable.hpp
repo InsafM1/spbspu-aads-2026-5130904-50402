@@ -92,6 +92,9 @@ namespace muhamadiarov
   private:
     Vector< Node< Key, Value > >* data_;
     size_t index_;
+
+    void next();
+    void prev();
   };
 
   template < class Key, class Value, class Hash, class Equal >
@@ -115,6 +118,9 @@ namespace muhamadiarov
   private:
     const Vector< Node< Key, Value > >* data_;
     size_t index_;
+
+    void next();
+    void prev();
   };
 }
 namespace muh = muhamadiarov;
@@ -425,4 +431,96 @@ muh::RTCIter< K, V, H, E > muh::RobinTable< K, V, H, E >::cend() const noexcept
 {
   return RTCIter< K, V, H, E >(&data_, size_);
 };
+
+template< class K, class V, class H, class E >
+muh::RTIter< K, V, H, E >::RTIter():
+  data_(nullptr),
+  index_(0)
+{}
+
+template< class K, class V, class H, class E >
+muh::RTIter< K, V, H, E >::RTIter(Vector< Node< K, V > >* data, size_t id):
+  data_(data),
+  index_(id)
+{}
+
+template< class K, class V, class H, class E >
+void muh::RTIter< K, V, H, E >::next()
+{ 
+  while (index_ + 1 < data_->capacity())
+  {
+    ++index_;
+    if ((*data_)[index_].occupied_)
+    {
+      return;
+    }
+  }
+}
+
+template < class K, class V, class H, class E >
+void muh::RTIter< K, V, H, E >::prev()
+{
+  while (index_ > 0)
+  {
+    --index_;
+    if ((*data_)[index_].occupied_)
+    {
+      return;
+    }
+  }
+}
+
+template < class K, class V, class H, class E >
+muh::RTIter< K, V, H, E >& muh::RTIter< K, V, H, E >::operator++()
+{
+  next();
+  return *this;
+}
+
+template < class K, class V, class H, class E >
+muh::RTIter< K, V, H, E >& muh::RTIter< K, V, H, E >::operator++(int)
+{
+  RTIter< K, V, H, E > temp = *this;
+  next();
+  return temp;
+}
+
+template < class K, class V, class H, class E >
+muh::RTIter< K, V, H, E >& muh::RTIter< K, V, H, E >::operator--()
+{
+  prev();
+  return *this;
+}
+
+template < class K, class V, class H, class E >
+muh::RTIter< K, V, H, E >& muh::RTIter< K, V, H, E >::operator--(int)
+{
+  RTIter< K, V, H, E > temp = *this;
+  prev();
+  return *this;
+}
+
+template < class K, class V, class H, class E >
+bool muh::RTIter< K, V, H, E >::operator==(const RTIter& other) const noexcept
+{
+  return data_ == other.data_ && index_ == other.index_;
+}
+
+template < class K, class V, class H, class E >
+bool muh::RTIter< K, V, H, E >::operator!=(const RTIter& other) const noexcept
+{
+  return !(*this == other);
+}
+
+template < class K, class V, class H, class E >
+std::pair< K, V >& muh::RTIter< K, V, H, E >::operator*() noexcept
+{
+  return &(*data_)[index_].value_;
+}
+
+template < class K, class V, class H, class E >
+std::pair< K, V >& muh::RTIter< K, V, H, E >::operator->() noexcept
+{
+  return &(*data_)[index_].value_;
+}
 #endif
