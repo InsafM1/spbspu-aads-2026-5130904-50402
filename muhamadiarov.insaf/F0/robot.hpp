@@ -10,7 +10,12 @@ namespace muhamadiarov
     double speed_;
     double currentEnergy_;
     
-    Robot() = delete;
+    Robot():
+      maxEnergy_(100.0),
+      recoveryRate_(1.0),
+      speed_(5.0),
+      currentEnergy_(100.0)
+    {}
     
     Robot(double e, double r, double s):
       maxEnergy_(e),

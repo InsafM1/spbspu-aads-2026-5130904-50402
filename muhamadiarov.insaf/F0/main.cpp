@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
   }
   file.close();
 
-  using vcmd_t = void (*)(std::istream&, std::ostream&, muh::GraphTable&);
+  using vcmd_t = void (*)(std::istream&, muh::GraphTable&);
   using gcmd_t = muh::Graph (*)(std::istream&, std::ostream&, muh::GraphTable&);
 
   using hash_t = muh::SipHash<std::string>;
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
       }
       else
       {
-        commandsToChangeState.get(cmd)(std::cin, std::cout, graphs);
+        commandsToChangeState.get(cmd)(std::cin, graphs);
       }
     }
     catch (const std::exception &)
