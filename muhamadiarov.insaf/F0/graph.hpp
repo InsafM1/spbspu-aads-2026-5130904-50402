@@ -52,6 +52,7 @@ namespace muhamadiarov
 
     bool getPointValue(int vertex, int& value) const;
     void setPointValue(int vertex, int value);
+    const List< int >& getVertices() const;
   private:
     List< int > vertices_;
     GraphTable_t connections_;
@@ -88,6 +89,10 @@ bool muh::Graph::findVertex(int vertex) const
 bool muh::Graph::findConnection(int from, const Edge& edge) const
 {
   Key_t pair{from, edge.to_};
+  if (!connections_.has(pair))
+  {
+    return false;
+  }
   const List< Edge >& list = connections_.get(pair);
   LCIter< Edge > iter = list.cbegin();
   for (size_t i = 0; i < list.size(); ++i)
@@ -296,5 +301,10 @@ void muh::Graph::setPointValue(int vertex, int value)
   {
     pointValues_.add(vertex, value);
   }
+}
+
+const muh::List< int >& muh::Graph::getVertices() const
+{
+  return vertices_;
 }
 #endif
