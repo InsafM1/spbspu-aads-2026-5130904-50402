@@ -49,6 +49,9 @@ namespace muhamadiarov
     bool hasConnection(int from, int to) const;
     List< std::pair< int, Edge > > getOutBounds(int from) const;
     List< std::pair< int, Edge > > getIncoming(int to) const;
+
+    bool getPointValue(int vertex, int& value) const;
+    void setPointValue(int vertex, int value);
   private:
     List< int > vertices_;
     GraphTable_t connections_;
@@ -275,5 +278,23 @@ muh::List< std::pair< int, muh::Edge > > muh::Graph::getIncoming(int to) const
     }
   }
   return result;
+}
+
+bool muh::Graph::getPointValue(int vertex, int& value) const
+{
+  if (pointValues_.has(vertex))
+  {
+    value = pointValues_.get(vertex);
+    return true;
+  }
+  return false;
+}
+
+void muh::Graph::setPointValue(int vertex, int value)
+{
+  if (findVertex(vertex))
+  {
+    pointValues_.add(vertex, value);
+  }
 }
 #endif
