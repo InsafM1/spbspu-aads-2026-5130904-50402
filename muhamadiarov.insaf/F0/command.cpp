@@ -23,7 +23,8 @@ namespace muhamadiarov
 
   struct DijkstraResult
   {
-    List<int> path;
+    List< int > path;
+    List< Edge > edges;
     double totalCost;
     bool found;
 
@@ -37,7 +38,8 @@ namespace muhamadiarov
   {
     DijkstraResult result;
 
-    if (!graph.findVertex(start) || !graph.findVertex(end)) {
+    if (!graph.findVertex(start) || !graph.findVertex(end))
+    {
       return result;
     }
 
@@ -53,12 +55,14 @@ namespace muhamadiarov
     Vector< double > dist;
     Vector< bool > visited;
     Vector< int > prev;
+    Vector< Edge > prevEdge;
 
     for (size_t i = 0; i < vertList.size(); ++i)
     {
       dist.pushBack(INF);
       visited.pushBack(false);
       prev.pushBack(-1);
+      prevEdge.pushBack(Edge());
     }
 
     int startIdx = -1;
@@ -160,6 +164,7 @@ namespace muhamadiarov
         {
           dist[neighborIdx] = dist[current] + cost;
           prev[neighborIdx] = current;
+          prevEdge[neighborIdx] = edge;
         }
         ++edgeIt;
       }
@@ -171,22 +176,79 @@ namespace muhamadiarov
     }
 
     Vector< int > pathReversed;
+    Vector< Edge > edgesReversed;
+    
     int currentIdx = endIdx;
     while (currentIdx != -1)
     {
       pathReversed.pushBack(vertList[currentIdx]);
+      if (prev[currentIdx] != -1)
+      {
+        edgesReversed.pushBack(prevEdge[currentIdx]);
+      }
       currentIdx = prev[currentIdx];
     }
 
-    for (int i = static_cast< int >(pathReversed.size()) - 1; i >= 0; --i)
-    {
+    for (int i = static_cast< int >(pathReversed.size()) - 1; i >= 0; --i) {
       result.path.pushBack(pathReversed[i]);
+    }
+
+    for (int i = static_cast< int >(edgesReversed.size()) - 1; i >= 0; --i) {
+      result.edges.pushBack(edgesReversed[i]);
     }
 
     result.totalCost = dist[endIdx];
     result.found = true;
 
     return result;
+  }
+
+  void printPathWithEdges(const DijkstraResult& result, std::ostream& out)
+  {
+    if (!result.found)
+    {
+      out << "<NO FOUND>\n";
+      return;
+    }
+
+    LCIter< int > vertexIt = result.path.cbegin();
+    LCIter< Edge > edgeIt = result.edges.cbegin();
+    for (size_t i = 0; i < result.edges.size(); ++i)
+    {
+      int from = *vertexIt;
+      const Edge& edge = *edgeIt;
+      char typeChar = roadTypeToChar(edge.type_);
+      out << from << " " << edge.to_ << " " << typeChar << " " << edge.distance_ << '\n';
+      ++edgeIt; 
+      ++vertexIt;
+    }
+  }
+
+  Graph createPathGraph(const DijkstraResult& result)
+  {
+    Graph pathGraph;
+    if (!result.found)
+    {
+      return pathGraph;
+    }
+
+    LCIter< int > vertexIt = result.path.cbegin();
+    for (size_t i = 0; i < result.path.size(); ++i)
+    {
+      pathGraph.addVertex(*vertexIt);
+      ++vertexIt;
+    }
+
+    LCIter< Edge > edgeIt = result.edges.cbegin();
+    LCIter< int > fromIt = result.path.cbegin();
+    for (size_t i = 0; i < result.edges.size(); ++i)
+    {
+      char typeChar = roadTypeToChar((*edgeIt).type_);
+      pathGraph.addConnection(*fromIt, (*edgeIt).to_, typeChar, (*edgeIt).distance_);
+      ++fromIt;
+      ++edgeIt;
+    }
+    return pathGraph;
   }
 }
 
@@ -321,7 +383,7 @@ void muh::setEdge(std::istream& in, GraphTable& graphs)
   { 
     throw std::invalid_argument("setEdge: not found this connection"); 
   }
-  
+
   g.removeConnection(from, to, oldType, oldDistance);
   if (mode == "-type")
   {
@@ -330,7 +392,6 @@ void muh::setEdge(std::istream& in, GraphTable& graphs)
     {
       throw std::runtime_error("setEdge: error input");
     }
-
     g.addConnection(from, to, newType, oldDistance);
   }
   else if (mode == "-distance")
@@ -340,7 +401,6 @@ void muh::setEdge(std::istream& in, GraphTable& graphs)
     {
       throw std::runtime_error("setEdge: error input");
     }
-
     g.addConnection(from, to, oldType, newDistance);
   }
   else if (mode == "-all")
@@ -351,11 +411,26 @@ void muh::setEdge(std::istream& in, GraphTable& graphs)
     {
       throw std::runtime_error("setEdge: error input");
     }
-
     g.addConnection(from, to, newType, newDistance);
   }
   else
   { 
     throw std::invalid_argument("setEdge: incorrect type"); 
   }
+}
+
+muh::Graph muh::findPath(std::istream& in, std::ostream& out, GraphTable& graphs)
+{
+  std::string graphName;
+  int start, end;
+  if (!(in >> graphName >> start >> end))
+  {
+    throw std::runtime_error("setEdge: error input");
+  }
+
+  Graph& g = getGraph(graphs, graphName);
+  DijkstraResult result = dijkstra(g, start, end, Goal::PATH);
+
+  printPathWithEdges(result, out);
+  return createPathGraph(result);
 }
