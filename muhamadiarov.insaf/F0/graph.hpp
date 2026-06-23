@@ -208,4 +208,72 @@ void muh::Graph::removeConnection(int from, const Edge& edge) noexcept
     connections_.drop(pair);
   }
 }
+
+void muh::Graph::removeAllConnection(int from, int to) noexcept
+{
+  Key_t pair{from, to};
+  connections_.drop(pair);
+}
+
+void muh::Graph::clear() noexcept
+{
+  vertices_.clear();
+  connections_.clear();
+  pointValues_.clear();
+}
+
+bool muh::Graph::getEdges(int from, int to, List< Edge >& edges) const
+{
+  Key_t pair{from, to};
+  if (connections_.has(pair))
+  {
+    edges = connections_.get(pair);
+    return true;
+  }
+  return false;
+}
+
+bool muh::Graph::hasConnection(int from, int to) const
+{
+  Key_t pair{from, to};
+  return connections_.has(pair);
+}
+
+muh::List< std::pair< int, muh::Edge > > muh::Graph::getOutBounds(int from) const
+{
+  List< std::pair< int, Edge > > result;
+  for (auto it = connections_.cbegin(); it != connections_.cend(); ++it)
+  {
+    if (it->first.first == from)
+    {
+      const List< Edge >& edges = it->second;
+      LCIter< Edge > edgeIter = edges.cbegin();
+      for (size_t i = 0; i < edges.size(); ++i)
+      {
+          result.pushBack({it->first.second, *edgeIter});
+          ++edgeIter;
+      }
+    }
+  }
+  return result;
+}
+
+muh::List< std::pair< int, muh::Edge > > muh::Graph::getIncoming(int to) const
+{
+  List< std::pair< int, Edge > > result;
+  for (auto it = connections_.cbegin(); it != connections_.cend(); ++it)
+  {
+    if (it->first.second == to)
+    {
+      const List< Edge >& edges = it->second;
+      LCIter< Edge > edgeIter = edges.cbegin();
+      for (size_t i = 0; i < edges.size(); ++i)
+      {
+        result.pushBack({it->first.first, *edgeIter});
+        ++edgeIter;
+      }
+    }
+  }
+  return result;
+}
 #endif
