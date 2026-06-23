@@ -4,15 +4,17 @@
 #include "vector.hpp"
 #include "edge.hpp"
 #include <list.hpp>
+#include <lciter.hpp>
+#include <liter.hpp>
 #include <string>
 
 namespace muhamadiarov
 { 
   struct PairHash
   {
-    size_t operator()(const std::pair<std::string, std::string>& p) const
+    size_t operator()(const std::pair< int, int>& p) const
     {
-      SipHash<std::string> hasher;
+      SipHash< int > hasher;
       return hasher(p.first) ^ (hasher(p.second) << 1);
     }
   };
@@ -26,7 +28,7 @@ namespace muhamadiarov
 
     Graph();
     explicit Graph(size_t countConnections, size_t countTown);
-    ~Graph();
+    ~Graph() = default;
 
     bool findVertex(int vertex) const;
     bool findConnection(int from, const Edge& edge) const;
@@ -52,5 +54,53 @@ namespace muhamadiarov
     GraphTable_t connections_;
     PointVableTable_t pointValues_;
   };
+}
+
+namespace muh = muhamadiarov;
+
+muh::Graph::Graph():
+  connections_(16),
+  pointValues_(16)
+{}
+
+muh::Graph::Graph(size_t countConnections, size_t countTown):
+  connections_(countConnections),
+  pointValues_(countTown)
+{}
+
+bool muh::Graph::findVertex(int vertex) const
+{
+  LCIter< int > iter = vertices_.cbegin();
+  for (size_t i = 0; i < vertices_.size(); ++i)
+  {
+    if (*iter == vertex)
+    {
+      return true;
+    }
+    ++iter;
+  }
+  return false;
+}
+
+bool muh::Graph::findConnection(int from, const Edge& edge) const
+{
+  Key_t pair{from, edge.to_};
+  const List< Edge >& list = connections_.get(pair);
+  LCIter< Edge > iter = list.cbegin();
+  for (size_t i = 0; i < list.size(); ++i)
+  {
+    if (*iter == edge)
+    {
+      return true;
+    }
+    ++iter;
+  }
+  return false;
+}
+
+bool muh::Graph::findConnection(int from, int to, RoadType type, size_t distance) const
+{
+  const Edge edge{to, type, distance};
+  return findConnection(from, edge);
 }
 #endif

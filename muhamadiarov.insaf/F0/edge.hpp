@@ -51,10 +51,10 @@ namespace muhamadiarov
   {
     int to_;
     RoadType type_;
-    int distance_;
+    size_t distance_;
     
     Edge() = delete;
-    Edge(int t, RoadType rt, int d):
+    Edge(int t, RoadType rt, size_t d):
       to_(t),
       type_(rt),
       distance_(d)
