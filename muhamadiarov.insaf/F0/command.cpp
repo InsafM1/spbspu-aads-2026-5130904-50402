@@ -50,3 +50,48 @@ void muh::setRobot(std::istream& in, GraphTable&)
     throw std::invalid_argument("setRobot:invalid argument <t1>");
   }
 }
+
+void muh::addVertex(std::istream& in, GraphTable& graphs)
+{
+  std::string graphName;
+  int vertex, value;
+  
+  if (!(in >> graphName >> vertex >> value))
+  {
+    throw std::runtime_error("addVertex: error input");
+  }
+  
+  Graph& g = getGraph(graphs, graphName);
+  g.addVertex(vertex);
+  g.setPointValue(vertex, value);
+}
+
+void muh::rmVertex(std::istream& in, GraphTable& graphs)
+{
+  std::string graphName;
+  int vertex;
+  
+  if (!(in >> graphName >> vertex))
+  {
+    throw std::runtime_error("rmVertex: error input");
+  }
+  
+  Graph& g = getGraph(graphs, graphName);
+  g.removeVertex(vertex);
+}
+
+void muh::setVertex(std::istream& in, GraphTable& graphs)
+{
+  std::string graphName;
+  int vertex;
+  size_t value;
+  
+  if (!(in >> graphName >> vertex >> value))
+  {
+    throw std::runtime_error("rmVertex: error input");
+  }
+  
+  Graph& g = getGraph(graphs, graphName);
+  g.setPointValue(vertex, value);
+}
+
