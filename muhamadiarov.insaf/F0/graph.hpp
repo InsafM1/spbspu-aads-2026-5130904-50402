@@ -103,4 +103,109 @@ bool muh::Graph::findConnection(int from, int to, RoadType type, size_t distance
   const Edge edge{to, type, distance};
   return findConnection(from, edge);
 }
+
+void muh::Graph::addVertex(int vertex)
+{
+  if (findVertex(vertex))
+  {
+    return;
+  }
+  vertices_.pushBack(vertex);
+}
+
+void muh::Graph::removeVertex(int vertex) noexcept
+{
+  if (!findVertex(vertex))
+  {
+    return;
+  }
+  LIter< int > iter = vertices_.begin();
+  for (size_t i = 0; i < vertices_.size(); ++i)
+  {
+    if (*iter == vertex)
+    {
+      iter = vertices_.erase(iter);
+    }
+    else
+    {
+      ++iter;
+    }
+  }
+
+  List< Key_t > toRemove;
+  RTIter< Key_t, List< Edge >, PairHash, std::equal_to< Key_t > > it = connections_.begin();
+  while (it != connections_.end())
+  {
+    const Key_t& key = it->first;
+    if (key.first == vertex || key.second == vertex)
+    {
+      toRemove.pushBack(key);
+    }
+  }
+
+  LIter< Key_t > rmIter = toRemove.begin();
+  for (size_t i = 0; i < toRemove.size(); ++i)
+  {
+    connections_.drop(*rmIter);
+    ++rmIter;
+  }
+}
+
+void muh::Graph::addConnection(int from, int to, RoadType type, size_t distance)
+{
+  Edge edge{to, type, distance};
+  addConnection(from, edge);
+}
+void muh::Graph::addConnection(int from, Edge& edge)
+{
+  addVertex(from);
+  addVertex(edge.to_);
+
+  Key_t pair{from, edge.to_};
+  if (connections_.has(pair))
+  {
+    List< Edge >& list = connections_.get(pair);
+    list.pushFront(edge);
+  }
+  else
+  {
+    List< Edge > newList;
+    newList.pushFront(edge);
+    connections_.add(pair, newList);
+  }
+}
+
+void muh::Graph::removeConnection(int from, int to, RoadType type, size_t distance) noexcept
+{
+  const Edge edge{to, type, distance};
+  removeConnection(from, edge);
+}
+
+void muh::Graph::removeConnection(int from, const Edge& edge) noexcept
+{
+  if (!findConnection(from, edge))
+  {
+    return;
+  }
+
+  Key_t pair{from, edge.to_};
+  List< Edge >& list = connections_.get(pair);
+  LIter< Edge > iter = list.begin();
+  for (size_t i = 0; i < list.size(); ++i)
+  {
+    if (*iter == edge)
+    {
+      iter = list.erase(iter);
+      break;
+    }
+    else
+    {
+      ++iter;
+    }
+  }
+  if (list.size() == 0)
+  {
+    connections_.drop(pair);
+  }
+}
 #endif
