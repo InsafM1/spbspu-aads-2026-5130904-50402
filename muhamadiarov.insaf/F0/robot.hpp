@@ -5,11 +5,6 @@
 namespace muhamadiarov
 {
   struct Robot {
-    double maxEnergy_;
-    double recoveryRate_;
-    double speed_;
-    double currentEnergy_;
-    
     Robot():
       maxEnergy_(100.0),
       recoveryRate_(1.0),
@@ -74,6 +69,11 @@ namespace muhamadiarov
     {
       speed_ = s;
     }
+  private:
+    double maxEnergy_;
+    double recoveryRate_;
+    double speed_;
+    double currentEnergy_;
   };
 }
 
