@@ -32,14 +32,14 @@ namespace muhamadiarov
 
     bool findVertex(int vertex) const;
     bool findConnection(int from, const Edge& edge) const;
-    bool findConnection(int from, int to, RoadType type, size_t distance) const;
+    bool findConnection(int from, int to, char type, size_t distance) const;
     
     void addVertex(int vertex);
     void removeVertex(int vertex) noexcept;
 
-    void addConnection(int from, int to, RoadType type, size_t distance);
+    void addConnection(int from, int to, char type, size_t distance);
     void addConnection(int from, Edge& edge);
-    void removeConnection(int from, int to, RoadType type, size_t distance) noexcept;
+    void removeConnection(int from, int to, char type, size_t distance) noexcept;
     void removeConnection(int from, const Edge& edge) noexcept;
 
     void removeAllConnection(int from, int to) noexcept;
@@ -106,9 +106,9 @@ bool muh::Graph::findConnection(int from, const Edge& edge) const
   return false;
 }
 
-bool muh::Graph::findConnection(int from, int to, RoadType type, size_t distance) const
+bool muh::Graph::findConnection(int from, int to, char type, size_t distance) const
 {
-  const Edge edge{to, type, distance};
+  const Edge edge{to, charToRoadType(type), distance};
   return findConnection(from, edge);
 }
 
@@ -159,9 +159,9 @@ void muh::Graph::removeVertex(int vertex) noexcept
   }
 }
 
-void muh::Graph::addConnection(int from, int to, RoadType type, size_t distance)
+void muh::Graph::addConnection(int from, int to, char type, size_t distance)
 {
-  Edge edge{to, type, distance};
+  Edge edge{to, charToRoadType(type), distance};
   addConnection(from, edge);
 }
 void muh::Graph::addConnection(int from, Edge& edge)
@@ -183,9 +183,9 @@ void muh::Graph::addConnection(int from, Edge& edge)
   }
 }
 
-void muh::Graph::removeConnection(int from, int to, RoadType type, size_t distance) noexcept
+void muh::Graph::removeConnection(int from, int to, char type, size_t distance) noexcept
 {
-  const Edge edge{to, type, distance};
+  const Edge edge{to, charToRoadType(type), distance};
   removeConnection(from, edge);
 }
 

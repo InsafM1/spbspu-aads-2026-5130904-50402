@@ -38,8 +38,8 @@ int main(int argc, char* argv[])
         char type;
         size_t distance = 0;
         file >> name1 >> name2 >> type >> distance;
-        g.addConnection(name1, name2, muh::charToRoadType(type), distance);
-        g.addConnection(name2, name1, muh::charToRoadType(type), distance);
+        g.addConnection(name1, name2, type, distance);
+        g.addConnection(name2, name1, type, distance);
       }
       graphs.add(graphName, std::move(g));
     }

@@ -57,17 +57,17 @@ BOOST_AUTO_TEST_CASE(TestAddConnection)
   g.addVertex(1);
   g.addVertex(2);
   
-  g.addConnection(1, 2, RoadType::ASPHALT, 100);
+  g.addConnection(1, 2, 'a', 100);
   BOOST_CHECK(g.hasConnection(1, 2));
   BOOST_CHECK(!g.hasConnection(2, 1));
   
   Edge expectedEdge(2, RoadType::ASPHALT, 100);
   BOOST_CHECK(g.findConnection(1, expectedEdge));
-  BOOST_CHECK(g.findConnection(1, 2, RoadType::ASPHALT, 100));
+  BOOST_CHECK(g.findConnection(1, 2, 'a', 100));
   
-  BOOST_CHECK(!g.findConnection(1, 2, RoadType::GROUND, 200));
+  BOOST_CHECK(!g.findConnection(1, 2, 'g', 200));
   
-  g.addConnection(3, 4, RoadType::GROUND, 50);
+  g.addConnection(3, 4, 'g', 50);
   BOOST_CHECK(g.findVertex(3));
   BOOST_CHECK(g.findVertex(4));
   BOOST_CHECK(g.hasConnection(3, 4));
@@ -76,20 +76,20 @@ BOOST_AUTO_TEST_CASE(TestAddConnection)
 BOOST_AUTO_TEST_CASE(TestRemoveConnection)
 {
   Graph g;
-  g.addConnection(1, 2, RoadType::ASPHALT, 100);
-  g.addConnection(1, 2, RoadType::GROUND, 150);
-  g.addConnection(1, 2, RoadType::SWAMP, 200);
+  g.addConnection(1, 2, 'a', 100);
+  g.addConnection(1, 2, 'g', 150);
+  g.addConnection(1, 2, 's', 200);
   
-  g.removeConnection(1, 2, RoadType::GROUND, 150);
+  g.removeConnection(1, 2, 'g', 150);
   BOOST_CHECK(g.hasConnection(1, 2));
-  BOOST_CHECK(g.findConnection(1, 2, RoadType::ASPHALT, 100));
-  BOOST_CHECK(!g.findConnection(1, 2, RoadType::GROUND, 150));
-  BOOST_CHECK(g.findConnection(1, 2, RoadType::SWAMP, 200));
+  BOOST_CHECK(g.findConnection(1, 2, 'a', 100));
+  BOOST_CHECK(!g.findConnection(1, 2, 'g', 150));
+  BOOST_CHECK(g.findConnection(1, 2, 's', 200));
   
   g.removeAllConnection(1, 2);
   BOOST_CHECK(!g.hasConnection(1, 2));
   
-  g.removeConnection(1, 2, RoadType::ASPHALT, 100);
+  g.removeConnection(1, 2, 'a', 100);
   BOOST_CHECK(!g.hasConnection(1, 2));
 }
 
@@ -97,11 +97,11 @@ BOOST_AUTO_TEST_CASE(testOutboundAndInbound)
 {
   Graph g;
   
-  g.addConnection(1, 2, RoadType::ASPHALT, 100);
-  g.addConnection(1, 3, RoadType::GROUND, 200);
-  g.addConnection(2, 1, RoadType::SWAMP, 50);
-  g.addConnection(3, 2, RoadType::ASPHALT, 150);
-  g.addConnection(4, 1, RoadType::GROUND, 75);
+  g.addConnection(1, 2, 'a', 100);
+  g.addConnection(1, 3, 'g', 200);
+  g.addConnection(2, 1, 's', 50);
+  g.addConnection(3, 2, 'a', 150);
+  g.addConnection(4, 1, 'g', 75);
   
   List< std::pair< int, Edge > > out1 = g.getOutBounds(1);
   BOOST_CHECK_EQUAL(out1.size(), 2);
@@ -173,9 +173,9 @@ BOOST_AUTO_TEST_CASE(TestPointValues)
 BOOST_AUTO_TEST_CASE(TestClear)
 {
   Graph g;
-  g.addConnection(1, 2, RoadType::ASPHALT, 100);
-  g.addConnection(2, 3, RoadType::GROUND, 150);
-  g.addConnection(3, 1, RoadType::SWAMP, 200);
+  g.addConnection(1, 2, 'a', 100);
+  g.addConnection(2, 3, 'g', 150);
+  g.addConnection(3, 1, 's', 200);
   g.setPointValue(1, 100);
   g.setPointValue(2, 50);
   g.setPointValue(3, 200);

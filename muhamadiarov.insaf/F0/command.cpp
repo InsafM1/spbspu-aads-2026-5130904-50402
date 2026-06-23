@@ -95,3 +95,91 @@ void muh::setVertex(std::istream& in, GraphTable& graphs)
   g.setPointValue(vertex, value);
 }
 
+void muh::addEdge(std::istream& in, GraphTable& graphs)
+{
+  std::string graphName;
+  int from, to;
+  char type;
+  size_t distance;
+
+  if (!(in >> graphName >> from >> to >> type >> distance))
+  {
+    throw std::runtime_error("addEdge: error input");
+  }
+
+  Graph& g = getGraph(graphs, graphName);
+  g.addConnection(from, to, type, distance); 
+}
+
+void muh::rmEdge(std::istream& in, GraphTable& graphs)
+{
+  std::string graphName;
+  int from, to;
+  char type;
+  size_t distance;
+
+  if (!(in >> graphName >> from >> to >> type >> distance))
+  {
+    throw std::runtime_error("rmEdge: error input"); 
+  }
+
+  Graph& g = getGraph(graphs, graphName);
+  g.removeConnection(from, to, type, distance);
+}
+
+void muh::setEdge(std::istream& in, GraphTable& graphs)
+{
+  std::string mode;
+  std::string graphName;
+  int from, to;
+  char oldType;
+  size_t oldDistance;
+  
+  if (!(in >> mode >> graphName >> from >> to >> oldType >> oldDistance))
+  {
+    throw std::runtime_error("setEdge: error input"); 
+  }
+
+  Graph& g = getGraph(graphs, graphName);
+  if (!g.findConnection(from, to, oldType, oldDistance))
+  { 
+    throw std::invalid_argument("setEdge: not found this connection"); 
+  }
+  
+  g.removeConnection(from, to, oldType, oldDistance);
+  if (mode == "-type")
+  {
+    char newType;
+    if (!(in >> newType))
+    {
+      throw std::runtime_error("setEdge: error input");
+    }
+
+    g.addConnection(from, to, newType, oldDistance);
+  }
+  else if (mode == "-distance")
+  {
+    size_t newDistance;
+    if (!(in >> newDistance))
+    {
+      throw std::runtime_error("setEdge: error input");
+    }
+
+    g.addConnection(from, to, oldType, newDistance);
+  }
+  else if (mode == "-all")
+  {
+    char newType;
+    size_t newDistance;
+    if (!(in >> newType >>newDistance))
+    {
+      throw std::runtime_error("setEdge: error input");
+    }
+
+    g.addConnection(from, to, newType, newDistance);
+  }
+  else
+  { 
+    throw std::invalid_argument("setEdge: incorrect type"); 
+  }
+}
