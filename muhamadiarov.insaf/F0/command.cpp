@@ -8,7 +8,9 @@ namespace muhamadiarov
   enum class Goal
   {
     PATH,
-    TIME
+    TIME,
+    GOLD,
+    VISITALL
   };
 
   Graph& getGraph(GraphTable& graphs, std::string name)
@@ -123,7 +125,7 @@ namespace muhamadiarov
           }
         }
         double dopCost = 0.0;
-        double energyCost = (*edgeIt).second.getEnergy(robot.getSpeed());
+        double energyCost = edge.getEnergy(robot.getSpeed());
         bool enough = true;
         while (!robot.consumeEnergy(energyCost))
         {
@@ -248,6 +250,143 @@ namespace muhamadiarov
       ++edgeIt;
     }
     return pathGraph;
+  }
+
+  struct DFSState
+  {
+    int current;
+    double time;
+    int gold;
+    int visitedCount;
+    List< int > path;
+    List< Edge > edges;
+    RobinTable< int, bool > visited;
+
+    DFSState(int v):
+      current(v),
+      time(0),
+      gold(0),
+      visitedCount(1)
+    {
+      path.pushBack(v);
+      visited.get(v) = true;
+    }
+    DFSState(const DFSState& other) = default;
+  };
+
+  struct DFSResult
+  {
+    List< int > path;
+    List< Edge > edges;
+    double totalTime;
+    int totalGold;
+    bool found;
+
+    DFSResult():
+      totalTime(0),
+      totalGold(0),
+      found(false)
+    {}
+  };
+
+  void dfs(
+    const Graph& graph,
+    DFSState& state,
+    DFSResult& best,
+    Goal mode,
+    int end,
+    double timeLimit,
+    int targetCount
+  )
+  {
+    if (mode == Goal::GOLD && state.current == end)
+    {
+      if (state.gold > best.totalGold)
+      {
+        best.path = state.path;
+        best.edges = state.edges;
+        best.totalTime = state.time;
+        best.totalGold = state.gold;
+        best.found = true;
+      }
+      return;
+    }
+
+    if (mode == Goal::GOLD && state.time >= timeLimit)
+    {
+      return;
+    }
+
+    if (mode == Goal::VISITALL && state.visitedCount == targetCount)
+    {
+      if (state.time < best.totalTime || !best.found)
+      {
+        best.path = state.path;
+        best.edges = state.edges;
+        best.totalTime = state.time;
+        best.totalGold = state.gold;
+        best.found = true;
+      }
+      return;
+    }
+
+    List< std::pair< int, Edge > > outgoing = graph.getOutBounds(state.current);
+    LCIter< std::pair< int, Edge > > edgeIt = outgoing.cbegin();
+
+    for (size_t i = 0; i < outgoing.size(); ++i)
+    {
+      int neighbor = edgeIt->first;
+      const Edge& edge = edgeIt->second;
+
+      if (state.visited.get(neighbor))
+      {
+        ++edgeIt;
+        continue;
+      }
+
+      double dopCost = 0.0;
+      double energyCost = edge.getEnergy(robot.getSpeed());
+      bool enough = true;
+      while (!robot.consumeEnergy(energyCost))
+      {
+        if (robot.getCurrentEnergy() == robot.getMaxEnergy())
+        {
+          enough = false;
+          break;
+        }
+        robot.charge();
+        dopCost += 1.0;
+      }
+      if (!enough)
+      {
+        ++edgeIt;
+        continue;
+      }
+
+      double newTime = state.time + edge.getTime(robot.getSpeed()) + dopCost;
+      if (mode == Goal::GOLD && newTime > timeLimit)
+      {
+        ++edgeIt;
+        continue;
+      }
+
+      DFSState next = state;
+      next.current = neighbor;
+      next.time = newTime;
+      next.visitedCount++;
+      next.visited.get(neighbor) = true;
+      next.path.pushBack(neighbor);
+      next.edges.pushBack(edge);
+
+      int value = 0;
+      if (graph.getPointValue(neighbor, value))
+      {
+        next.gold += value;
+      }
+
+      dfs(graph, next, best, mode, end, timeLimit, targetCount);
+      ++edgeIt;
+    }
   }
 }
 
@@ -429,7 +568,7 @@ muh::Graph muh::findPath(std::istream& in, std::ostream& out, GraphTable& graphs
 
   Graph& g = getGraph(graphs, graphName);
   DijkstraResult result = dijkstra(g, start, end, Goal::PATH);
-
+  robot.resetEnergy();
   printPathWithEdges(result, out);
   return createPathGraph(result);
 }
@@ -445,7 +584,7 @@ muh::Graph muh::findFastes(std::istream& in, std::ostream& out, GraphTable& grap
 
   Graph& g = getGraph(graphs, graphName);
   DijkstraResult result = dijkstra(g, start, end, Goal::TIME);
-
+  robot.resetEnergy();
   printPathWithEdges(result, out);
   return createPathGraph(result);
 }
