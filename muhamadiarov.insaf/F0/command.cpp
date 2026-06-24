@@ -204,17 +204,11 @@ namespace muhamadiarov
     return result;
   }
 
-  void printPathWithEdges(const DijkstraResult& result, std::ostream& out)
+  void printPathWithEdges(const List< int >& path, const List< Edge >& edges, std::ostream& out)
   {
-    if (!result.found)
-    {
-      out << "<NO FOUND>\n";
-      return;
-    }
-
-    LCIter< int > vertexIt = result.path.cbegin();
-    LCIter< Edge > edgeIt = result.edges.cbegin();
-    for (size_t i = 0; i < result.edges.size(); ++i)
+    LCIter< int > vertexIt = path.cbegin();
+    LCIter< Edge > edgeIt = edges.cbegin();
+    for (size_t i = 0; i < edges.size(); ++i)
     {
       int from = *vertexIt;
       const Edge& edge = *edgeIt;
@@ -225,24 +219,19 @@ namespace muhamadiarov
     }
   }
 
-  Graph createPathGraph(const DijkstraResult& result)
+  Graph createPathGraph(const List< int >& path, const List< Edge >& edges)
   {
     Graph pathGraph;
-    if (!result.found)
-    {
-      return pathGraph;
-    }
-
-    LCIter< int > vertexIt = result.path.cbegin();
-    for (size_t i = 0; i < result.path.size(); ++i)
+    LCIter< int > vertexIt = path.cbegin();
+    for (size_t i = 0; i < path.size(); ++i)
     {
       pathGraph.addVertex(*vertexIt);
       ++vertexIt;
     }
 
-    LCIter< Edge > edgeIt = result.edges.cbegin();
-    LCIter< int > fromIt = result.path.cbegin();
-    for (size_t i = 0; i < result.edges.size(); ++i)
+    LCIter< Edge > edgeIt = edges.cbegin();
+    LCIter< int > fromIt = path.cbegin();
+    for (size_t i = 0; i < edges.size(); ++i)
     {
       char typeChar = roadTypeToChar((*edgeIt).type_);
       pathGraph.addConnection(*fromIt, (*edgeIt).to_, typeChar, (*edgeIt).distance_);
@@ -563,14 +552,25 @@ muh::Graph muh::findPath(std::istream& in, std::ostream& out, GraphTable& graphs
   int start, end;
   if (!(in >> graphName >> start >> end))
   {
-    throw std::runtime_error("setEdge: error input");
+    throw std::runtime_error("findPath: error input");
   }
 
   Graph& g = getGraph(graphs, graphName);
+  if (!g.findVertex(start) || !g.findVertex(end))
+  { 
+    throw std::invalid_argument("findPath: not found those vertexes"); 
+  }
+
   DijkstraResult result = dijkstra(g, start, end, Goal::PATH);
   robot.resetEnergy();
-  printPathWithEdges(result, out);
-  return createPathGraph(result);
+
+  if (!result.found)
+  {
+    out << "<NO FOUND>\n";
+    return Graph();
+  }
+  printPathWithEdges(result.path, result.edges, out);
+  return createPathGraph(result.path, result.edges);
 }
 
 muh::Graph muh::findFastes(std::istream& in, std::ostream& out, GraphTable& graphs)
@@ -579,12 +579,55 @@ muh::Graph muh::findFastes(std::istream& in, std::ostream& out, GraphTable& grap
   int start, end;
   if (!(in >> graphName >> start >> end))
   {
-    throw std::runtime_error("setEdge: error input");
+    throw std::runtime_error("findFastes: error input");
   }
 
   Graph& g = getGraph(graphs, graphName);
+  if (!g.findVertex(start) || !g.findVertex(end))
+  { 
+    throw std::invalid_argument("findFastes: not found those vertexes"); 
+  }
+
   DijkstraResult result = dijkstra(g, start, end, Goal::TIME);
   robot.resetEnergy();
-  printPathWithEdges(result, out);
-  return createPathGraph(result);
+  
+  if (!result.found)
+  {
+    out << "<NO FOUND>\n";
+    return Graph();
+  }
+  printPathWithEdges(result.path, result.edges, out);
+  return createPathGraph(result.path, result.edges);
+}
+
+muh::Graph muh::findGold(std::istream& in, std::ostream& out, GraphTable& graphs)
+{
+  std::string graphName;
+  int start, end;
+  double timeLimit;
+
+  if (!(in >> graphName >> start >> end >> timeLimit))
+  {
+    throw std::runtime_error("findGold: error input");
+  }
+
+  Graph& g = getGraph(graphs, graphName);
+
+  if (!g.findVertex(start) || !g.findVertex(end))
+  { 
+    throw std::invalid_argument("findGold: not found those vertexes"); 
+  }
+
+  DFSState initialState(start);
+  DFSResult result;
+  dfs(g, initialState, result, Goal::GOLD, end, timeLimit, 0);
+
+  if (!result.found)
+  {
+    out << "<NO FOUND>\n";
+    return Graph();
+  }
+
+  printPathWithEdges(result.path, result.edges, out);
+  return createPathGraph(result.path, result.edges);
 }
