@@ -605,7 +605,6 @@ muh::Graph muh::findGold(std::istream& in, std::ostream& out, GraphTable& graphs
   std::string graphName;
   int start, end;
   double timeLimit;
-
   if (!(in >> graphName >> start >> end >> timeLimit))
   {
     throw std::runtime_error("findGold: error input");
@@ -628,6 +627,38 @@ muh::Graph muh::findGold(std::istream& in, std::ostream& out, GraphTable& graphs
     return Graph();
   }
 
+  printPathWithEdges(result.path, result.edges, out);
+  return createPathGraph(result.path, result.edges);
+}
+
+muh::Graph muh::findVisitall(std::istream& in, std::ostream& out, GraphTable& graphs)
+{
+  std::string graphName;
+  int start;
+  if (!(in >> graphName >> start))
+  {
+    throw std::runtime_error("findVisitall: error input");
+  }
+
+  Graph& g = getGraph(graphs, graphName);
+  if (!g.findVertex(start))
+  {
+    throw std::invalid_argument("findVisitall: not found those vertexes"); 
+  }
+  if (g.getVertices().size() <= 1)
+  {
+    throw std::logic_error("findVisitall: isn`t landscape");
+  }
+
+  int targetCount = g.getVertices().size();
+  DFSState initialState(start);
+  DFSResult result;
+  dfs(g, initialState, result, Goal::VISITALL, -1, 0, targetCount);
+  if (!result.found)
+  {
+    out << "<NO FOUND>\n";
+    return Graph();
+  }
   printPathWithEdges(result.path, result.edges, out);
   return createPathGraph(result.path, result.edges);
 }
