@@ -8,8 +8,7 @@ namespace muhamadiarov
   enum class Goal
   {
     PATH,
-    TIME,
-    GOLD
+    TIME
   };
 
   Graph& getGraph(GraphTable& graphs, std::string name)
@@ -430,6 +429,22 @@ muh::Graph muh::findPath(std::istream& in, std::ostream& out, GraphTable& graphs
 
   Graph& g = getGraph(graphs, graphName);
   DijkstraResult result = dijkstra(g, start, end, Goal::PATH);
+
+  printPathWithEdges(result, out);
+  return createPathGraph(result);
+}
+
+muh::Graph muh::findFastes(std::istream& in, std::ostream& out, GraphTable& graphs)
+{
+  std::string graphName;
+  int start, end;
+  if (!(in >> graphName >> start >> end))
+  {
+    throw std::runtime_error("setEdge: error input");
+  }
+
+  Graph& g = getGraph(graphs, graphName);
+  DijkstraResult result = dijkstra(g, start, end, Goal::TIME);
 
   printPathWithEdges(result, out);
   return createPathGraph(result);
