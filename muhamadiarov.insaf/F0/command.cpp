@@ -22,6 +22,10 @@ namespace muhamadiarov
     return graphs.get(name);
   }
 
+  struct DFSState;
+  struct DFSResult;
+  void stateToResult(const DFSState& state, DFSResult& best);
+  
   struct DijkstraResult
   {
     List< int > path;
@@ -35,7 +39,12 @@ namespace muhamadiarov
     {}
   };
 
-  DijkstraResult dijkstra(const Graph& graph, int start, int end, Goal goal)
+  DijkstraResult dijkstra(
+    const Graph& graph, 
+    int start,
+    int end,
+    Goal goal
+  )
   {
     DijkstraResult result;
 
@@ -78,6 +87,11 @@ namespace muhamadiarov
       {
         endIdx = i;
       }
+    }
+
+    if (startIdx == -1 || endIdx == -1)
+    {
+      return result;
     }
 
     dist[startIdx] = 0;
@@ -124,20 +138,26 @@ namespace muhamadiarov
             break;
           }
         }
-        double dopCost = 0.0;
+        
         double energyCost = edge.getEnergy(robot.getSpeed());
+        double dopCost = 0.0;
         bool enough = true;
-        while (!robot.consumeEnergy(energyCost))
+        double simEnergy = robot.getCurrentEnergy();
+        while (simEnergy < energyCost)
         {
-          if (robot.getCurrentEnergy() == robot.getMaxEnergy())
+          if (simEnergy >= robot.getMaxEnergy())
           {
             enough = false;
             break;
           }
-          robot.charge();
-          dopCost += 1.0;
+          simEnergy += robot.getRecoveryRate();
+          dopCost   += 1.0;
+          if (simEnergy > robot.getMaxEnergy())
+          {
+            simEnergy = robot.getMaxEnergy();
+          }
         }
-        if (neighborIdx == -1 || visited[neighborIdx] || !enough)
+        if (!enough)
         {
           ++edgeIt;
           continue;
@@ -241,6 +261,49 @@ namespace muhamadiarov
     return pathGraph;
   }
 
+  bool checkCond(size_t value, size_t target, const std::string& op)
+  {
+    if (op == "-eq")
+    {
+      return value == target;
+    }
+    else if (op == "-ne")
+    {
+      return value != target;
+    }
+    else if (op == "-gt")
+    {
+      return value > target;
+    }
+    else if (op == "-lt")
+    {
+      return value < target;
+    }
+    else if (op == "-ge")
+    {
+      return value >= target;
+    }
+    else if (op == "-le")
+    {
+      return value <= target;
+    }
+    throw std::invalid_argument("checkCondition: incorrect operators");
+  }
+
+  std::string operators[] = {"-eq", "-ne", "-gt", "-lt", "-ge", "-le"};
+  
+  bool isTrueOp(const std::string& op)
+  {
+    for (size_t i = 0; i < 6; ++i)
+    {
+      if (op == operators[i])
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+
   struct DFSState
   {
     int current;
@@ -250,15 +313,19 @@ namespace muhamadiarov
     List< int > path;
     List< Edge > edges;
     RobinTable< int, bool > visited;
+    std::string op;
+    size_t target;
 
-    DFSState(int v):
+    DFSState(int v, std::string oprt = "", size_t count = 0):
       current(v),
       time(0),
       gold(0),
-      visitedCount(1)
+      visitedCount(1),
+      op(oprt),
+      target(count)
     {
       path.pushBack(v);
-      visited.get(v) = true;
+      visited.add(v, true);
     }
     DFSState(const DFSState& other) = default;
   };
@@ -278,6 +345,15 @@ namespace muhamadiarov
     {}
   };
 
+  void stateToResult(const DFSState& state, DFSResult& best)
+  {
+    best.path = state.path;
+    best.edges = state.edges;
+    best.totalTime = state.time;
+    best.totalGold = state.gold;
+    best.found = true;
+  }
+
   void dfs(
     const Graph& graph,
     DFSState& state,
@@ -285,36 +361,32 @@ namespace muhamadiarov
     Goal mode,
     int end,
     double timeLimit,
-    int targetCount
+    int target
   )
   {
-    if (mode == Goal::GOLD && state.current == end)
+    if (state.current == end && mode == Goal::GOLD)
     {
-      if (state.gold > best.totalGold)
+      if (isTrueOp(state.op) && checkCond(state.visitedCount, state.target, state.op))
       {
-        best.path = state.path;
-        best.edges = state.edges;
-        best.totalTime = state.time;
-        best.totalGold = state.gold;
-        best.found = true;
+        stateToResult(state, best);
+      }
+      else if (state.gold > best.totalGold)
+      {
+        stateToResult(state, best);
       }
       return;
     }
 
-    if (mode == Goal::GOLD && state.time >= timeLimit)
+    if (mode == Goal::GOLD && state.time >= timeLimit && !isTrueOp(state.op))
     {
       return;
     }
 
-    if (mode == Goal::VISITALL && state.visitedCount == targetCount)
+    if (mode == Goal::VISITALL && state.visitedCount == target - 1)
     {
       if (state.time < best.totalTime || !best.found)
       {
-        best.path = state.path;
-        best.edges = state.edges;
-        best.totalTime = state.time;
-        best.totalGold = state.gold;
-        best.found = true;
+        stateToResult(state, best);
       }
       return;
     }
@@ -327,24 +399,29 @@ namespace muhamadiarov
       int neighbor = edgeIt->first;
       const Edge& edge = edgeIt->second;
 
-      if (state.visited.get(neighbor))
+      if (state.visited.has(neighbor) && state.visited.get(neighbor))
       {
         ++edgeIt;
         continue;
       }
 
-      double dopCost = 0.0;
       double energyCost = edge.getEnergy(robot.getSpeed());
+      double dopCost = 0.0;
       bool enough = true;
-      while (!robot.consumeEnergy(energyCost))
+      double simEnergy = robot.getCurrentEnergy();
+      while (simEnergy < energyCost)
       {
-        if (robot.getCurrentEnergy() == robot.getMaxEnergy())
+        if (simEnergy >= robot.getMaxEnergy())
         {
           enough = false;
           break;
         }
-        robot.charge();
-        dopCost += 1.0;
+        simEnergy += robot.getRecoveryRate();
+        dopCost   += 1.0;
+        if (simEnergy > robot.getMaxEnergy())
+        {
+          simEnergy = robot.getMaxEnergy();
+        }
       }
       if (!enough)
       {
@@ -353,7 +430,7 @@ namespace muhamadiarov
       }
 
       double newTime = state.time + edge.getTime(robot.getSpeed()) + dopCost;
-      if (mode == Goal::GOLD && newTime > timeLimit)
+      if (mode == Goal::GOLD && newTime > timeLimit && !isTrueOp(state.op))
       {
         ++edgeIt;
         continue;
@@ -363,7 +440,7 @@ namespace muhamadiarov
       next.current = neighbor;
       next.time = newTime;
       next.visitedCount++;
-      next.visited.get(neighbor) = true;
+      next.visited.add(neighbor, true);
       next.path.pushBack(neighbor);
       next.edges.pushBack(edge);
 
@@ -373,7 +450,74 @@ namespace muhamadiarov
         next.gold += value;
       }
 
-      dfs(graph, next, best, mode, end, timeLimit, targetCount);
+      dfs(graph, next, best, mode, end, timeLimit, target);
+      ++edgeIt;
+    }
+  }
+
+  void dfsSpeed(
+    const Graph& graph,
+    DFSState& state,
+    DFSResult& best,
+    int end
+  )
+  {
+    if (state.current == end)
+    {
+      bool condOk = checkCond(state.visitedCount, state.target, state.op);
+      if (condOk && (!best.found || state.time < best.totalTime))
+      {
+        stateToResult(state, best);
+      }
+      return;
+    }
+
+    List< std::pair< int, Edge > > outgoing = graph.getOutBounds(state.current);
+    LCIter< std::pair< int, Edge > > edgeIt = outgoing.cbegin();
+    for (size_t i = 0; i < outgoing.size(); ++i)
+    {
+      int neighbor = edgeIt->first;
+      const Edge& edge = edgeIt->second;
+      if (state.visited.has(neighbor) && state.visited.get(neighbor))
+      {
+        ++edgeIt;
+        continue;
+      }
+ 
+      double energyCost = edge.getEnergy(robot.getSpeed());
+      double dopCost = 0.0;
+      bool enough = true;
+      double simEnergy = robot.getCurrentEnergy();
+      while (simEnergy < energyCost)
+      {
+        if (simEnergy >= robot.getMaxEnergy())
+        {
+          enough = false;
+          break;
+        }
+        simEnergy += robot.getRecoveryRate();
+        dopCost   += 1.0;
+        if (simEnergy > robot.getMaxEnergy())
+        {
+          simEnergy = robot.getMaxEnergy();
+        }
+      }
+      if (!enough)
+      {
+        ++edgeIt;
+        continue;
+      }
+
+
+      DFSState next = state;
+      next.current = neighbor;
+      next.time = state.time + edge.getTime(robot.getSpeed()) + dopCost;
+      next.visitedCount++;
+      next.visited.add(neighbor, true);
+      next.path.pushBack(neighbor);
+      next.edges.pushBack(edge);
+
+      dfsSpeed(graph, next, best, end);
       ++edgeIt;
     }
   }
@@ -620,13 +764,13 @@ muh::Graph muh::findGold(std::istream& in, std::ostream& out, GraphTable& graphs
   DFSState initialState(start);
   DFSResult result;
   dfs(g, initialState, result, Goal::GOLD, end, timeLimit, 0);
-
+  robot.resetEnergy();
   if (!result.found)
   {
     out << "<NO FOUND>\n";
     return Graph();
   }
-
+  out << "Gold: " << result.totalGold << '\n';
   printPathWithEdges(result.path, result.edges, out);
   return createPathGraph(result.path, result.edges);
 }
@@ -653,12 +797,74 @@ muh::Graph muh::findVisitall(std::istream& in, std::ostream& out, GraphTable& gr
   int targetCount = g.getVertices().size();
   DFSState initialState(start);
   DFSResult result;
-  dfs(g, initialState, result, Goal::VISITALL, -1, 0, targetCount);
+  dfs(g, initialState, result, Goal::VISITALL, -1, 0.0, targetCount);
+  robot.resetEnergy();
   if (!result.found)
   {
     out << "<NO FOUND>\n";
     return Graph();
   }
+  out << "Time: " << result.totalTime << '\n';
   printPathWithEdges(result.path, result.edges, out);
   return createPathGraph(result.path, result.edges);
+}
+
+muh::Graph muh::findCertain(std::istream& in, std::ostream& out, GraphTable& graphs)
+{
+  std::string graphName, mode, op;
+  int start, end;
+  size_t count;
+  if (!(in >> mode >> graphName >> start >> end >> op >> count))
+  {
+    throw std::runtime_error("findGold: error input");
+  }
+
+  Graph& g = getGraph(graphs, graphName);
+
+  if (!g.findVertex(start) || !g.findVertex(end) || !isTrueOp(op))
+  { 
+    throw std::invalid_argument("findGold: invalid arguments"); 
+  }
+
+  List< int > path;
+  List< Edge > edges;
+  bool found = true;
+  if (mode == "-gold")
+  {
+    DFSState initialState(start, op, count);
+    DFSResult result;
+    dfs(g, initialState, result, Goal::GOLD, end, INF, 0);
+    if (result.found)
+    {
+      path = result.path;
+      edges = result.edges;
+      found = result.found;
+      out << "Gold: " << result.totalGold << '\n';
+    }
+  }
+  else if (mode == "-speed")
+  {
+    DFSResult speedResult;
+    DFSState  speedState(start, op, count);
+    dfsSpeed(g, speedState, speedResult, end); 
+    if (speedResult.found)
+    {
+      path  = speedResult.path;
+      edges = speedResult.edges;
+      found = true;
+      out << "Time: " << speedResult.totalTime << '\n';
+    }
+  }
+  else
+  { 
+    throw std::invalid_argument("findGold: incorrect mode"); 
+  }
+  robot.resetEnergy();
+  if (!found)
+  {
+    out << "<NO FOUND>\n";
+    return Graph();
+  }
+  printPathWithEdges(path, edges, out);
+  return createPathGraph(path, edges);
 }

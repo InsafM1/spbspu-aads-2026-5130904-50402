@@ -193,7 +193,7 @@ muh::RobinTable< K, V, H, E >::RobinTable(const RobinTable& other):
       node.psl_ = other.data_[i].psl_;
       node.occupied_ = true;
     }
-    data_.pushBack(std::move(node));
+    data_.pushBack(node);
   }
 }
 

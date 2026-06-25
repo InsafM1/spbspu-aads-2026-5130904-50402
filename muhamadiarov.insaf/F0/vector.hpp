@@ -94,7 +94,6 @@ muh::Vector< T >& muh::Vector< T >::operator=(const Vector& other)
   if (this != &other)
   {
     Vector< T > copy(other);
-    clear();
     std::swap(data_, copy.data_);
     std::swap(size_, copy.size_);
     std::swap(capacity_, copy.capacity_);
@@ -134,7 +133,6 @@ const T& muh::Vector< T >::operator[](size_t id) const noexcept
 template < class T >
 muh::Vector< T >::~Vector()
 {
-  clear();
   delete[] data_;
 }
 
@@ -146,7 +144,7 @@ void muh::Vector< T >::popBack()
     return;
   }
   --size_;
-  data_[size_].~T();
+  data_[size_] = T{};
 }
 
 template < class T >
@@ -281,7 +279,6 @@ void muh::Vector< T >::reserve(size_t newCapacity)
   for (size_t i = 0; i < size_; ++i)
   {
     newData[i] = std::move(data_[i]);
-    data_[i].~T();
   }
   delete [] data_;
   data_ = newData;
@@ -303,7 +300,7 @@ void muh::Vector< T >::clear() noexcept
 {
   for (size_t i = 0; i < size_; ++i)
   {
-    data_[i].~T();
+    data_[i] = T{};
   }
   size_ = 0;
 }

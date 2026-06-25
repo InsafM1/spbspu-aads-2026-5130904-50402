@@ -14,7 +14,7 @@ namespace muhamadiarov
   const double energyMultiplier[] = {1.0, 1.5, 2.5};
   const double timeMultiplier[] = {1.0, 1.5, 3.0};
 
-  RoadType charToRoadType(char c)
+  inline RoadType charToRoadType(char c)
   {
     switch (c)
     {
@@ -25,7 +25,7 @@ namespace muhamadiarov
     }
   }
 
-  char roadTypeToChar(RoadType t)
+  inline char roadTypeToChar(RoadType t)
   {
     switch (t)
     {

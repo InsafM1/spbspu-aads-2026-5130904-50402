@@ -27,9 +27,10 @@ int main(int argc, char* argv[])
 
   std::string graphName;
   size_t edges = 0;
+  size_t vertexes = 0;
   try
   {
-    while (file >> graphName >> edges)
+    while (file >> graphName >> vertexes >> edges)
     {
       muh::Graph g;
       for (size_t i = 0; i < edges; ++i)
@@ -40,6 +41,12 @@ int main(int argc, char* argv[])
         file >> name1 >> name2 >> type >> distance;
         g.addConnection(name1, name2, type, distance);
         g.addConnection(name2, name1, type, distance);
+      }
+      for (size_t i = 0; i < vertexes; ++i)
+      {
+        int name, value;
+        file >> name >> value;
+        g.setPointValue(name, value);
       }
       graphs.add(graphName, std::move(g));
     }
