@@ -3,7 +3,7 @@
 namespace muhamadiarov
 {
   const double INF = 1e18;
-  static Robot robot; 
+  static Robot robot;
 
   enum class Goal
   {
@@ -25,7 +25,7 @@ namespace muhamadiarov
   struct DFSState;
   struct DFSResult;
   void stateToResult(const DFSState& state, DFSResult& best);
-  
+
   struct DijkstraResult
   {
     List< int > path;
@@ -40,7 +40,7 @@ namespace muhamadiarov
   };
 
   DijkstraResult dijkstra(
-    const Graph& graph, 
+    const Graph& graph,
     int start,
     int end,
     Goal goal
@@ -138,7 +138,7 @@ namespace muhamadiarov
             break;
           }
         }
-        
+
         double energyCost = edge.getEnergy(robot.getSpeed());
         double dopCost = 0.0;
         bool enough = true;
@@ -177,7 +177,7 @@ namespace muhamadiarov
           int value;
           if (graph.getPointValue(neighbor, value))
           {
-            cost = static_cast< double >(value); 
+            cost = static_cast< double >(value);
           }
         }
 
@@ -198,7 +198,7 @@ namespace muhamadiarov
 
     Vector< int > pathReversed;
     Vector< Edge > edgesReversed;
-    
+
     int currentIdx = endIdx;
     while (currentIdx != -1)
     {
@@ -234,7 +234,7 @@ namespace muhamadiarov
       const Edge& edge = *edgeIt;
       char typeChar = roadTypeToChar(edge.type_);
       out << from << " " << edge.to_ << " " << typeChar << " " << edge.distance_ << '\n';
-      ++edgeIt; 
+      ++edgeIt;
       ++vertexIt;
     }
   }
@@ -291,7 +291,7 @@ namespace muhamadiarov
   }
 
   std::string operators[] = {"-eq", "-ne", "-gt", "-lt", "-ge", "-le"};
-  
+
   bool isTrueOp(const std::string& op)
   {
     for (size_t i = 0; i < 6; ++i)
@@ -483,7 +483,7 @@ namespace muhamadiarov
         ++edgeIt;
         continue;
       }
- 
+
       double energyCost = edge.getEnergy(robot.getSpeed());
       double dopCost = 0.0;
       bool enough = true;
@@ -541,7 +541,7 @@ void muh::setRobot(std::istream& in, GraphTable&)
   {
     throw std::runtime_error("setRobot: error input");
   }
-  
+
   if (param == "-maxEnergy")
   {
     robot.setMaxEnergy(value);
@@ -564,12 +564,12 @@ void muh::addVertex(std::istream& in, GraphTable& graphs)
 {
   std::string graphName;
   int vertex, value;
-  
+
   if (!(in >> graphName >> vertex >> value))
   {
     throw std::runtime_error("addVertex: error input");
   }
-  
+
   Graph& g = getGraph(graphs, graphName);
   g.addVertex(vertex);
   g.setPointValue(vertex, value);
@@ -579,12 +579,12 @@ void muh::rmVertex(std::istream& in, GraphTable& graphs)
 {
   std::string graphName;
   int vertex;
-  
+
   if (!(in >> graphName >> vertex))
   {
     throw std::runtime_error("rmVertex: error input");
   }
-  
+
   Graph& g = getGraph(graphs, graphName);
   g.removeVertex(vertex);
 }
@@ -594,12 +594,12 @@ void muh::setVertex(std::istream& in, GraphTable& graphs)
   std::string graphName;
   int vertex;
   size_t value;
-  
+
   if (!(in >> graphName >> vertex >> value))
   {
     throw std::runtime_error("rmVertex: error input");
   }
-  
+
   Graph& g = getGraph(graphs, graphName);
   g.setPointValue(vertex, value);
 }
@@ -617,7 +617,7 @@ void muh::addEdge(std::istream& in, GraphTable& graphs)
   }
 
   Graph& g = getGraph(graphs, graphName);
-  g.addConnection(from, to, type, distance); 
+  g.addConnection(from, to, type, distance);
 }
 
 void muh::rmEdge(std::istream& in, GraphTable& graphs)
@@ -629,7 +629,7 @@ void muh::rmEdge(std::istream& in, GraphTable& graphs)
 
   if (!(in >> graphName >> from >> to >> type >> distance))
   {
-    throw std::runtime_error("rmEdge: error input"); 
+    throw std::runtime_error("rmEdge: error input");
   }
 
   Graph& g = getGraph(graphs, graphName);
@@ -643,16 +643,16 @@ void muh::setEdge(std::istream& in, GraphTable& graphs)
   int from, to;
   char oldType;
   size_t oldDistance;
-  
+
   if (!(in >> mode >> graphName >> from >> to >> oldType >> oldDistance))
   {
-    throw std::runtime_error("setEdge: error input"); 
+    throw std::runtime_error("setEdge: error input");
   }
 
   Graph& g = getGraph(graphs, graphName);
   if (!g.findConnection(from, to, oldType, oldDistance))
-  { 
-    throw std::invalid_argument("setEdge: not found this connection"); 
+  {
+    throw std::invalid_argument("setEdge: not found this connection");
   }
 
   g.removeConnection(from, to, oldType, oldDistance);
@@ -685,8 +685,8 @@ void muh::setEdge(std::istream& in, GraphTable& graphs)
     g.addConnection(from, to, newType, newDistance);
   }
   else
-  { 
-    throw std::invalid_argument("setEdge: incorrect type"); 
+  {
+    throw std::invalid_argument("setEdge: incorrect type");
   }
 }
 
@@ -701,8 +701,8 @@ muh::Graph muh::findPath(std::istream& in, std::ostream& out, GraphTable& graphs
 
   Graph& g = getGraph(graphs, graphName);
   if (!g.findVertex(start) || !g.findVertex(end))
-  { 
-    throw std::invalid_argument("findPath: not found those vertexes"); 
+  {
+    throw std::invalid_argument("findPath: not found those vertexes");
   }
 
   DijkstraResult result = dijkstra(g, start, end, Goal::PATH);
@@ -728,13 +728,13 @@ muh::Graph muh::findFastes(std::istream& in, std::ostream& out, GraphTable& grap
 
   Graph& g = getGraph(graphs, graphName);
   if (!g.findVertex(start) || !g.findVertex(end))
-  { 
-    throw std::invalid_argument("findFastes: not found those vertexes"); 
+  {
+    throw std::invalid_argument("findFastes: not found those vertexes");
   }
 
   DijkstraResult result = dijkstra(g, start, end, Goal::TIME);
   robot.resetEnergy();
-  
+
   if (!result.found)
   {
     out << "<NO FOUND>\n";
@@ -757,8 +757,8 @@ muh::Graph muh::findGold(std::istream& in, std::ostream& out, GraphTable& graphs
   Graph& g = getGraph(graphs, graphName);
 
   if (!g.findVertex(start) || !g.findVertex(end))
-  { 
-    throw std::invalid_argument("findGold: not found those vertexes"); 
+  {
+    throw std::invalid_argument("findGold: not found those vertexes");
   }
 
   DFSState initialState(start);
@@ -787,7 +787,7 @@ muh::Graph muh::findVisitall(std::istream& in, std::ostream& out, GraphTable& gr
   Graph& g = getGraph(graphs, graphName);
   if (!g.findVertex(start))
   {
-    throw std::invalid_argument("findVisitall: not found those vertexes"); 
+    throw std::invalid_argument("findVisitall: not found those vertexes");
   }
   if (g.getVertices().size() <= 1)
   {
@@ -822,8 +822,8 @@ muh::Graph muh::findCertain(std::istream& in, std::ostream& out, GraphTable& gra
   Graph& g = getGraph(graphs, graphName);
 
   if (!g.findVertex(start) || !g.findVertex(end) || !isTrueOp(op))
-  { 
-    throw std::invalid_argument("findGold: invalid arguments"); 
+  {
+    throw std::invalid_argument("findGold: invalid arguments");
   }
 
   List< int > path;
@@ -846,7 +846,7 @@ muh::Graph muh::findCertain(std::istream& in, std::ostream& out, GraphTable& gra
   {
     DFSResult speedResult;
     DFSState  speedState(start, op, count);
-    dfsSpeed(g, speedState, speedResult, end); 
+    dfsSpeed(g, speedState, speedResult, end);
     if (speedResult.found)
     {
       path  = speedResult.path;
@@ -856,8 +856,8 @@ muh::Graph muh::findCertain(std::istream& in, std::ostream& out, GraphTable& gra
     }
   }
   else
-  { 
-    throw std::invalid_argument("findGold: incorrect mode"); 
+  {
+    throw std::invalid_argument("findGold: incorrect mode");
   }
   robot.resetEnergy();
   if (!found)

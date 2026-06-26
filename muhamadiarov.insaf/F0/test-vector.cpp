@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE(CopyConstructor)
   v1.pushBack(10);
   v1.pushBack(20);
   v1.pushBack(30);
-  
+
   Vector< int > v2(v1);
   BOOST_CHECK_EQUAL(v2.size(), 3);
   BOOST_CHECK_EQUAL(v2[0], 10);
@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(MoveConstructor)
   v1.pushBack(10);
   v1.pushBack(20);
   v1.pushBack(30);
-  
+
   Vector< int > v2(std::move(v1));
   BOOST_CHECK_EQUAL(v2.size(), 3);
   BOOST_CHECK_EQUAL(v2[0], 10);
@@ -49,10 +49,10 @@ BOOST_AUTO_TEST_CASE(CopyAssignment)
   v1.pushBack(10);
   v1.pushBack(20);
   v1.pushBack(30);
-  
+
   Vector< int > v2;
   v2 = v1;
-  
+
   BOOST_CHECK_EQUAL(v2.size(), 3);
   BOOST_CHECK_EQUAL(v2[0], 10);
   BOOST_CHECK_EQUAL(v2[1], 20);
@@ -65,10 +65,10 @@ BOOST_AUTO_TEST_CASE(MoveAssignment)
   v1.pushBack(10);
   v1.pushBack(20);
   v1.pushBack(30);
-  
+
   Vector< int > v2;
   v2 = std::move(v1);
-  
+
   BOOST_CHECK_EQUAL(v2.size(), 3);
   BOOST_CHECK_EQUAL(v2[0], 10);
   BOOST_CHECK_EQUAL(v2[1], 20);
@@ -81,9 +81,9 @@ BOOST_AUTO_TEST_CASE(OperatorBracket)
 {
   Vector< int > v;
   v.pushBack(10);
-  
+
   BOOST_CHECK_EQUAL(v[0], 10);
-  
+
   v[0] = 99;
   BOOST_CHECK_EQUAL(v[0], 99);
 }
@@ -94,11 +94,11 @@ BOOST_AUTO_TEST_CASE(AtMethod)
   v.pushBack(10);
   v.pushBack(20);
   v.pushBack(30);
-  
+
   BOOST_CHECK_EQUAL(v.at(0), 10);
   BOOST_CHECK_EQUAL(v.at(1), 20);
   BOOST_CHECK_EQUAL(v.at(2), 30);
-  
+
   v.at(1) = 99;
   BOOST_CHECK_EQUAL(v.at(1), 99);
 }
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(PushBackLValue)
   Vector< int > v;
   int value = 10;
   v.pushBack(value);
-  
+
   BOOST_CHECK_EQUAL(v.size(), 1);
   BOOST_CHECK_EQUAL(v[0], 10);
 }
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(PushBackRValue)
 {
   Vector< int > v;
   v.pushBack(10);
-  
+
   BOOST_CHECK_EQUAL(v.size(), 1);
   BOOST_CHECK_EQUAL(v[0], 10);
 }
@@ -129,10 +129,10 @@ BOOST_AUTO_TEST_CASE(PushBackMultiple)
   {
       v.pushBack(i);
   }
-  
+
   BOOST_CHECK_EQUAL(v.size(), 100);
   BOOST_CHECK_GE(v.capacity(), 100);
-  
+
   for (int i = 0; i < 100; ++i)
   {
       BOOST_CHECK_EQUAL(v[i], i);
@@ -145,16 +145,16 @@ BOOST_AUTO_TEST_CASE(PopBack)
   v.pushBack(10);
   v.pushBack(20);
   v.pushBack(30);
-  
+
   v.popBack();
   BOOST_CHECK_EQUAL(v.size(), 2);
   BOOST_CHECK_EQUAL(v[0], 10);
   BOOST_CHECK_EQUAL(v[1], 20);
-  
+
   v.popBack();
   BOOST_CHECK_EQUAL(v.size(), 1);
   BOOST_CHECK_EQUAL(v[0], 10);
-  
+
   v.popBack();
   BOOST_CHECK_EQUAL(v.size(), 0);
   BOOST_CHECK(v.isEmpty());
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE(PushFrontLValue)
   v.pushFront(value);
   BOOST_CHECK_EQUAL(v.size(), 1);
   BOOST_CHECK_EQUAL(v[0], 10);
-  
+
   v.pushFront(20);
   BOOST_CHECK_EQUAL(v.size(), 2);
   BOOST_CHECK_EQUAL(v[0], 20);
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE(PushFrontRValue)
   v.pushFront(10);
   BOOST_CHECK_EQUAL(v.size(), 1);
   BOOST_CHECK_EQUAL(v[0], 10);
-  
+
   v.pushFront(20);
   BOOST_CHECK_EQUAL(v.size(), 2);
   BOOST_CHECK_EQUAL(v[0], 20);
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(PushFrontMultiple)
   for (int i = 0; i < 50; ++i)
   {
       v.pushFront(i);
-  } 
+  }
   BOOST_CHECK_EQUAL(v.size(), 50);
   BOOST_CHECK_EQUAL(v[0], 49);
   BOOST_CHECK_EQUAL(v[49], 0);
@@ -205,16 +205,16 @@ BOOST_AUTO_TEST_CASE(PopFront)
   v.pushBack(10);
   v.pushBack(20);
   v.pushBack(30);
-  
+
   v.popFront();
   BOOST_CHECK_EQUAL(v.size(), 2);
   BOOST_CHECK_EQUAL(v[0], 20);
   BOOST_CHECK_EQUAL(v[1], 30);
-  
+
   v.popFront();
   BOOST_CHECK_EQUAL(v.size(), 1);
   BOOST_CHECK_EQUAL(v[0], 30);
-  
+
   v.popFront();
   BOOST_CHECK_EQUAL(v.size(), 0);
   BOOST_CHECK(v.isEmpty());
@@ -226,10 +226,10 @@ BOOST_AUTO_TEST_CASE(InsertLValue)
   v.pushBack(10);
   v.pushBack(20);
   v.pushBack(30);
-  
+
   int value = 99;
   v.insert(1, value);
-  
+
   BOOST_CHECK_EQUAL(v.size(), 4);
   BOOST_CHECK_EQUAL(v[0], 10);
   BOOST_CHECK_EQUAL(v[1], 99);
@@ -243,9 +243,9 @@ BOOST_AUTO_TEST_CASE(InsertRValue)
   v.pushBack(10);
   v.pushBack(20);
   v.pushBack(30);
-  
+
   v.insert(1, 99);
-  
+
   BOOST_CHECK_EQUAL(v.size(), 4);
   BOOST_CHECK_EQUAL(v[0], 10);
   BOOST_CHECK_EQUAL(v[1], 99);
@@ -267,9 +267,9 @@ BOOST_AUTO_TEST_CASE(ClearMethod)
   v.pushBack(10);
   v.pushBack(20);
   v.pushBack(30);
-  
+
   v.clear();
-  
+
   BOOST_CHECK_EQUAL(v.size(), 0);
   BOOST_CHECK(v.isEmpty());
   BOOST_CHECK_EQUAL(v.capacity(), 3);
@@ -281,9 +281,9 @@ BOOST_AUTO_TEST_CASE(EraseMethod)
   v.pushBack(10);
   v.pushBack(20);
   v.pushBack(30);
-  
+
   v.erase(1);
-  
+
   BOOST_CHECK_EQUAL(v.size(), 2);
   BOOST_CHECK_EQUAL(v[0], 10);
   BOOST_CHECK_EQUAL(v[1], 30);
@@ -295,9 +295,9 @@ BOOST_AUTO_TEST_CASE(ReserveMethod)
   v.pushBack(10);
   v.pushBack(20);
   v.pushBack(30);
-  
+
   v.reserve(100);
-  
+
   BOOST_CHECK_GE(v.capacity(), 100);
   BOOST_CHECK_EQUAL(v.size(), 3);
   BOOST_CHECK_EQUAL(v[0], 10);

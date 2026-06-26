@@ -12,20 +12,20 @@ namespace muhamadiarov
     Vector(const Vector& other);
     explicit Vector(size_t capacity);
     Vector(Vector&& other) noexcept;
-    
+
     Vector& operator=(const Vector& other);
     Vector& operator=(Vector&& other) noexcept;
-    
+
     T& operator[](size_t id) noexcept;
     const T& operator[](size_t id) const noexcept;
-    
+
     ~Vector();
-    
+
     void popBack();
     void pushBack(const T& value);
     void pushBack(T&& value);
     void popFront();
-    void pushFront(const T& value); 
+    void pushFront(const T& value);
     void pushFront(T&& value);
     void insert(size_t id, const T& value);
     void insert(size_t id, T&& value);
@@ -155,7 +155,7 @@ void muh::Vector< T >::pushBack(const T& value)
     reserve(capacity_ == 0 ? 1 : capacity_ * 2);
   }
   data_[size_] = value;
-  ++size_; 
+  ++size_;
 }
 
 template < class T >
@@ -244,7 +244,7 @@ void muh::Vector< T >::shiftRight(size_t id)
   {
     data_[i] = std::move(data_[i - 1]);
   }
-  
+
   ++size_;
 }
 

@@ -8,7 +8,7 @@ muh::Graph::Graph(const Graph& other):
   pointValues_(other.pointValues_)
 {}
 
-muh::Graph::Graph(Graph&& other) noexcept: 
+muh::Graph::Graph(Graph&& other) noexcept:
   vertices_(std::move(other.vertices_)),
   connections_(std::move(other.connections_)),
   pointValues_(std::move(other.pointValues_))

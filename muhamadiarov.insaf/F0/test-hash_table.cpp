@@ -7,7 +7,7 @@ struct TestHashTable
 {
   RobinTable< std::string, int > emptyTable;
   RobinTable< std::string, int > table;
-  
+
   TestHashTable()
   {
     table.add("one", 1);
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(MoveConstructor)
   BOOST_CHECK_EQUAL(moved.size(), 5);
   BOOST_CHECK_EQUAL(moved.get("one"), 1);
   BOOST_CHECK_EQUAL(moved.get("five"), 5);
-  
+
   BOOST_CHECK_EQUAL(table.size(), 0);
   BOOST_CHECK(table.empty());
 }
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(CopyAssignment)
 {
   RobinTable< std::string, int > copy;
   copy = table;
-  
+
   BOOST_CHECK_EQUAL(copy.size(), table.size());
   BOOST_CHECK_EQUAL(copy.get("one"), 1);
   BOOST_CHECK_EQUAL(copy.get("five"), 5);
@@ -66,11 +66,11 @@ BOOST_AUTO_TEST_CASE(MoveAssignment)
 {
   RobinTable< std::string, int > moved;
   moved = std::move(table);
-  
+
   BOOST_CHECK_EQUAL(moved.size(), 5);
   BOOST_CHECK_EQUAL(moved.get("one"), 1);
   BOOST_CHECK_EQUAL(moved.get("five"), 5);
-  
+
   BOOST_CHECK_EQUAL(table.size(), 0);
   BOOST_CHECK(table.empty());
 }
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(RehashMethod)
 {
   size_t old_size = table.size();
   table.rehash(50);
-  
+
   BOOST_CHECK_EQUAL(table.size(), old_size);
   BOOST_CHECK(table.has("one"));
   BOOST_CHECK(table.has("five"));
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(ConstIterator)
 {
   auto it = table.cbegin();
   BOOST_CHECK(it != table.cend());
-  
+
   int count = 0;
   for (auto it = table.cbegin(); it != table.cend(); ++it)
   {

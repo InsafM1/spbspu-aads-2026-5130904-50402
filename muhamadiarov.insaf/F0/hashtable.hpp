@@ -28,7 +28,7 @@ namespace muhamadiarov
   public:
     using Iterator = RTIter < Key, Value, Hash, Equal >;
     using ConstIterator = RTCIter< Key, Value, Hash, Equal >;
-    
+
     RobinTable();
     explicit RobinTable(size_t slots, float maxLoad = 0.7f);
     RobinTable(const RobinTable& other);
@@ -37,7 +37,7 @@ namespace muhamadiarov
     RobinTable& operator=(RobinTable&& other) noexcept;
 
     ~RobinTable();
-    
+
     void add(Key k, Value v);
     void drop(Key k);
     Value& get(Key k);
@@ -50,7 +50,7 @@ namespace muhamadiarov
     size_t size() const noexcept;
     bool empty() const noexcept;
     float maxLoadFactor() const noexcept;
-    
+
     Iterator begin() noexcept;
     Iterator end() noexcept;
     ConstIterator begin() const noexcept;
@@ -67,7 +67,7 @@ namespace muhamadiarov
     size_t size_;
     float maxLoad_;
 
-    size_t findSlot(const Key& k) const;    
+    size_t findSlot(const Key& k) const;
     friend class RTIter<Key, Value, Hash, Equal>;
     friend class RTCIter<Key, Value, Hash, Equal>;
   };
@@ -78,10 +78,10 @@ namespace muhamadiarov
   public:
     RTIter();
     RTIter(Vector< Slot< Key, Value > >* data, size_t id);
-    
+
     RTIter& operator++();
     RTIter& operator++(int);
-    
+
     RTIter& operator--();
     RTIter& operator--(int);
 
@@ -104,10 +104,10 @@ namespace muhamadiarov
   public:
     RTCIter();
     RTCIter(const Vector< Slot< Key, Value > >* data, size_t id);
-    
+
     RTCIter& operator++();
     RTCIter& operator++(int);
-    
+
     RTCIter& operator--();
     RTCIter& operator--(int);
 
@@ -390,7 +390,7 @@ size_t muh::RobinTable< K, V, H, E >::size() const noexcept
 template < class K, class V, class H, class E >
 bool muh::RobinTable< K, V, H, E >::empty() const noexcept
 {
-  return size_ == 0; 
+  return size_ == 0;
 }
 
 template < class K, class V, class H, class E >
@@ -460,7 +460,7 @@ muh::RTIter< K, V, H, E >::RTIter(Vector< Slot< K, V > >* data, size_t id):
 
 template< class K, class V, class H, class E >
 void muh::RTIter< K, V, H, E >::next()
-{ 
+{
   while (data_ && index_ < data_->capacity() && !(*data_)[index_].occupied_)
   {
     ++index_;
@@ -548,7 +548,7 @@ muh::RTCIter< K, V, H, E >::RTCIter(const Vector< Slot< K, V > >* data, size_t i
 
 template< class K, class V, class H, class E >
 void muh::RTCIter< K, V, H, E >::next()
-{ 
+{
   while (data_ && index_ < data_->capacity() && !(*data_)[index_].occupied_)
   {
     ++index_;

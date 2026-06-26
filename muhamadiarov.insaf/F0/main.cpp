@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 
   muh::RobinTable<std::string, vcmd_t, hash_t, std::equal_to<std::string> > commandsToChangeState;
   muh::RobinTable<std::string, gcmd_t, hash_t, std::equal_to<std::string> > commandsAlgorithm;
-  
+
   commandsToChangeState.add("Make-Robot", muh::makeRobot);
   commandsToChangeState.add("SetRobot", muh::setRobot);
   commandsToChangeState.add("AddVertex", muh::addVertex);
@@ -74,8 +74,8 @@ int main(int argc, char* argv[])
   commandsToChangeState.add("RemoveEdge", muh::rmEdge);
   commandsToChangeState.add("SetVertex", muh::setVertex);
   commandsToChangeState.add("SetEdge", muh::setEdge);
-  
-  commandsAlgorithm.add("Path", muh::findPath); 
+
+  commandsAlgorithm.add("Path", muh::findPath);
   commandsAlgorithm.add("Gold", muh::findGold);
   commandsAlgorithm.add("Visit", muh::findVisitall);
   commandsAlgorithm.add("Fast", muh::findFastes);

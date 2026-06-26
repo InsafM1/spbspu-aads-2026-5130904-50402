@@ -11,23 +11,23 @@ namespace muhamadiarov
       speed_(5.0),
       currentEnergy_(100.0)
     {}
-    
+
     Robot(double e, double r, double s):
       maxEnergy_(e),
       recoveryRate_(r),
       speed_(s),
       currentEnergy_(e) {}
-    
+
     void resetEnergy()
-    { 
-      currentEnergy_ = maxEnergy_; 
+    {
+      currentEnergy_ = maxEnergy_;
     }
-    
+
     void charge()
-    { 
-      currentEnergy_ = std::min(maxEnergy_, currentEnergy_ + recoveryRate_); 
+    {
+      currentEnergy_ = std::min(maxEnergy_, currentEnergy_ + recoveryRate_);
     }
-    
+
     bool consumeEnergy(double amount)
     {
       if (currentEnergy_ >= amount)
@@ -37,7 +37,7 @@ namespace muhamadiarov
       }
       return false;
     }
-    
+
     double getMaxEnergy() const
     {
       return maxEnergy_;
@@ -54,13 +54,13 @@ namespace muhamadiarov
     {
       return currentEnergy_;
     }
-    
+
     void setMaxEnergy(double e)
-    { 
-      maxEnergy_ = e; 
+    {
+      maxEnergy_ = e;
       currentEnergy_ = std::min(currentEnergy_, maxEnergy_);
     }
-    
+
     void setRecoveryRate(double r)
     {
       recoveryRate_ = r;

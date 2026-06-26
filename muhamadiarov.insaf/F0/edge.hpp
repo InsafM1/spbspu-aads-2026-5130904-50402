@@ -5,7 +5,7 @@
 namespace muhamadiarov
 {
   enum class RoadType
-  { 
+  {
     ASPHALT,
     GROUND,
     SWAMP
@@ -52,7 +52,7 @@ namespace muhamadiarov
     int to_;
     RoadType type_;
     size_t distance_;
-    
+
     Edge():
       to_(-1),
       type_(),
@@ -64,19 +64,19 @@ namespace muhamadiarov
       type_(rt),
       distance_(d)
     {}
-    
+
     double getTime(double speed) const
     {
       double multiplier = timeMultiplier[static_cast<int>(type_)];
       return static_cast<double>(distance_) / speed * multiplier;
     }
-    
+
     double getEnergy(double speed) const
     {
       double multiplier = energyMultiplier[static_cast<int>(type_)];
       return static_cast<double>(distance_) * multiplier / speed;
     }
-    
+
     bool operator==(const Edge& other) const
     {
       return to_ == other.to_ && type_ == other.type_ && distance_ == other.distance_;

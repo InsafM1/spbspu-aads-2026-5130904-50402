@@ -9,7 +9,7 @@
 #include <string>
 
 namespace muhamadiarov
-{ 
+{
   struct PairHash
   {
     size_t operator()(const std::pair< int, int>& p) const
@@ -25,7 +25,7 @@ namespace muhamadiarov
     using Key_t = std::pair< int, int >;
     using GraphTable_t = RobinTable< Key_t, List< Edge >, PairHash, std::equal_to< Key_t > >;
     using PointVableTable_t = RobinTable< int, int, SipHash< int >, std::equal_to< int > >;
-    
+
     Graph(const Graph& other);
     Graph(Graph&& other) noexcept;
     Graph& operator=(const Graph& other);
@@ -37,7 +37,7 @@ namespace muhamadiarov
     bool findVertex(int vertex) const;
     bool findConnection(int from, const Edge& edge) const;
     bool findConnection(int from, int to, char type, size_t distance) const;
-    
+
     void addVertex(int vertex);
     void removeVertex(int vertex) noexcept;
 
