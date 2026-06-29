@@ -5,7 +5,7 @@
 
 namespace muhamadiarov
 {
-  template <class T>
+  template< class T >
   class Stack
   {
   public:
@@ -21,7 +21,7 @@ namespace muhamadiarov
 
 namespace muh = muhamadiarov;
 
-template <class T>
+template< class T >
 bool muh::Stack< T >::empty() const noexcept
 {
   if (data_.size() == 0)
@@ -31,25 +31,25 @@ bool muh::Stack< T >::empty() const noexcept
   return false;
 }
 
-template <class T>
+template< class T >
 size_t muh::Stack< T >::size() const noexcept
 {
   return data_.size();
 }
 
-template <class T>
+template< class T >
 T& muh::Stack< T >::top()
 {
   return *(data_.end());
 }
 
-template <class T>
+template< class T >
 void muh::Stack< T >::push(const T& val)
 {
   data_.pushBack(val);
 }
 
-template <class T>
+template< class T >
 void muh::Stack< T >::pop() noexcept
 {
   data_.popBack();

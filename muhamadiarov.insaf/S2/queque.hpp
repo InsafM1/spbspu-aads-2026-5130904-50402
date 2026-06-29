@@ -5,12 +5,12 @@
 
 namespace muhamadiarov
 {
-  template < class T >
+  template< class T >
   class Queque
   {
   public:
     bool empty() const noexcept;
-    T& top() noexcept;
+    T& top();
     void push(const T& val);
     void pop() noexcept;
     size_t size() const noexcept;
@@ -21,7 +21,7 @@ namespace muhamadiarov
 
 namespace muh = muhamadiarov;
 
-template <class T>
+template< class T >
 bool muh::Queque< T >::empty() const noexcept
 {
   if (data_.size() == 0)
@@ -31,25 +31,25 @@ bool muh::Queque< T >::empty() const noexcept
   return false;
 }
 
-template <class T>
-T& muh::Queque< T >::top() noexcept
+template< class T >
+T& muh::Queque< T >::top()
 {
   return *(data_.begin());
 }
 
-template <class T>
+template< class T >
 void muh::Queque< T >::push(const T& val)
 {
-  data_.pushBack(val);
+  data_.pushBack(std::move(val));
 }
 
-template <class T>
+template< class T >
 void muh::Queque< T >::pop() noexcept
 {
   data_.popFront();
 }
 
-template <class T>
+template< class T >
 size_t muh::Queque< T >::size() const noexcept
 {
   return data_.size();

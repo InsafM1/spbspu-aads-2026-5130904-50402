@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
       return 1;
     }
   }
-  std::istream& is = (argc == 2)? file : std::cin;
+  std::istream& is = (argc == 2) ? file : std::cin;
   muh::Stack< long long > result;
   try
   {
